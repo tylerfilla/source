@@ -4,9 +4,9 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.EditText;
 
-public class SourceEditor extends EditText {
+public class Editor extends EditText {
 
-    public SourceEditor(Context context, AttributeSet attrs) {
+    public Editor(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
