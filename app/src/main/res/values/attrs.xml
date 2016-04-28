@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Editor">
+
+        <attr name="showLineHighlight" format="boolean" />
+        <attr name="showLineNumbers" format="boolean" />
+
+        <attr name="colorLineHighlight" format="color" />
+
+    </declare-styleable>
+</resources>
