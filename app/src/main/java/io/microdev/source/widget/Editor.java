@@ -29,6 +29,7 @@ public class Editor extends EditText {
     private boolean showLineNumbers;
 
     private Paint paintLineHighlight;
+    private Paint paintLineNumbersColumn;
 
     private File file;
 
@@ -71,6 +72,7 @@ public class Editor extends EditText {
 
         // Allocate paints for custom drawing
         paintLineHighlight = new Paint();
+        paintLineNumbersColumn = new Paint();
     }
 
     public boolean getShowLineHighlight() {
@@ -93,6 +95,14 @@ public class Editor extends EditText {
     protected void onDraw(Canvas canvas) {
         // Render line numbers if preferred
         if (showLineNumbers) {
+            // Iterate over lines
+            for (int l = 1; l <= getLineCount(); l++) {
+                // Write number
+                canvas.drawText(String.valueOf(l), 0, getLayout().getLineTop(l), getPaint());
+            }
+
+            // Shift everything to the right from now on
+            canvas.translate(50f, 0f);
         }
 
         // Render line highlighting if preferred
@@ -116,14 +126,14 @@ public class Editor extends EditText {
                 }
 
                 // Calculate vertical offset boundaries for highlight region
-                int highlightStart = getLayout().getLineBounds(lineStart, null) - getPaddingTop();
-                int highlightEnd = getLayout().getLineBounds(lineStart + lineCount - 1, null) + getLineHeight() - getPaddingTop();
+                int highlightStart = getLayout().getLineBottom(lineStart) - getPaddingTop();
+                int highlightEnd = getLayout().getLineBottom(lineStart + lineCount - 1) + getLineHeight() - getPaddingTop();
 
                 // Set paint color of highlight region
                 paintLineHighlight.setColor(colorLineHighlight);
 
                 // Draw the highlight region
-                canvas.drawRect(0.0f, highlightStart, getWidth(), highlightEnd, paintLineHighlight);
+                canvas.drawRect(0f, highlightStart, getWidth(), highlightEnd, paintLineHighlight);
             }
         }
 
