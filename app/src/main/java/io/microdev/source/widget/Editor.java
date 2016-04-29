@@ -212,20 +212,32 @@ public class Editor extends EditText {
             // If there's no text selection, but the cursor is placed in the editor
             if (selStart > -1 && selStart == selEnd) {
                 // Get line number for selection
-                int line = getLayout().getLineForOffset(selStart);
+                int line = layout.getLineForOffset(selStart);
 
-                // TODO: Scan upwards and downwards to find layout lines belonging to same "file line"
+                // Preliminary edges of highlight region vertical bounds
+                float hrTop = layout.getLineTop(line) + getPaddingTop();
+                float hrBottom = layout.getLineBottom(line) + getPaddingTop();
 
-                // Find edges of highlight region vertical bounds
-                float top = getLayout().getLineTop(line) + getPaddingTop();
-                float bottom = getLayout().getLineBottom(line) + getPaddingTop();
+                // Preliminary edges of highlight region horizontal bounds
+                float hrLeft = layout.getLineLeft(line) + getPaddingLeft();
+                float hrRight = getRight() - getPaddingRight();
 
-                // Find edges of highlight region horizontal bounds
-                float start = getLayout().getLineLeft(line) + getPaddingLeft();
-                float end = getRight() - getPaddingRight();
+                // Scan upwards for wrapped lines
+                int scanUp = line - 1;
+                while (scanUp >= 0 && !getText().subSequence(layout.getLineVisibleEnd(scanUp), layout.getLineEnd(scanUp)).toString().contains("\n")) {
+                    hrTop -= getLineHeight();
+                    scanUp--;
+                }
+
+                // Scan downwards for wrapped lines
+                int scanDown = line;
+                while (scanDown < getLineCount() - 1 && !getText().subSequence(layout.getLineVisibleEnd(scanDown), layout.getLineEnd(scanDown)).toString().contains("\n")) {
+                    hrBottom += getLineHeight();
+                    scanDown++;
+                }
 
                 // Draw highlight behind line
-                canvas.drawRect(start, top, end, bottom, paintLineHighlight);
+                canvas.drawRect(hrLeft, hrTop, hrRight, hrBottom, paintLineHighlight);
             }
         }
 
