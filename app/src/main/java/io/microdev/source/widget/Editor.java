@@ -163,21 +163,16 @@ public class Editor extends EditText {
 
     private void updateLineNumberColumnWidth() {
         // Iterate over all lines and count non-soft-wrap lines
-        int hardLines = 0;
+        int numberedLines = 0;
         for (int i = 0; i < getLineCount(); i++) {
-            // If last line and not followed by any linefeeds
-            if (i == getLineCount() - 1 && layout.getLineVisibleEnd(i) == layout.getLineEnd(i)) {
-                hardLines++;
-            }
-
-            // If not last line and followed by a linefeed
-            if (i < getLineCount() - 1 && getText().subSequence(layout.getLineVisibleEnd(i), layout.getLineEnd(i)).toString().contains("\n")) {
-                hardLines++;
+            // Determine if line should be numbered
+            if (i == 0 || getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) {
+                numberedLines++;
             }
         }
 
         // Calculate starting width of line number column
-        lineNumberColumnWidth = lineNumberColumnPaddingLeft + layout.getPaint().measureText(String.valueOf(hardLines)) + lineNumberColumnPaddingRight;
+        lineNumberColumnWidth = lineNumberColumnPaddingLeft + layout.getPaint().measureText(String.valueOf(numberedLines)) + lineNumberColumnPaddingRight;
 
         // FIXME: Commandeer the left padding to account for line number column (more custom way?)
         setPadding((int) lineNumberColumnWidth, getPaddingTop(), getPaddingRight(), getPaddingBottom());
@@ -193,24 +188,8 @@ public class Editor extends EditText {
             // Iterate over all lines
             int l = 1;
             for (int i = 0; i < getLineCount(); i++) {
-                // Flag indicating whether to mark number of line
-                boolean markLine = false;
-
-                // If first line
-                if (i == 0) {
-                    markLine = true;
-                }
-
-                // If middle line
-                if (i > 0) {
-                    // If previous line ended in a linefeed (that is, if this line is not a continuation of it)
-                    if (getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) {
-                        markLine = true;
-                    }
-                }
-
-                // If line mark flag is set
-                if (markLine) {
+                // Determine if line should be numbered
+                if (i == 0 || getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) {
                     // Get Y coordinates of line's vertical bounds
                     float lineTop = layout.getLineTop(i) + getPaddingTop();
                     float lineBottom = layout.getLineBottom(i) + getPaddingTop();
