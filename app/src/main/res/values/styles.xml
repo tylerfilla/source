@@ -13,13 +13,16 @@
     </style>
 
     <style name="Activity.Edit.Editor" parent="">
+        <!-- Android attrs -->
         <item name="android:fontFamily">monospace</item>
         <item name="android:imeOptions">flagNoExtractUi</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">0dp</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">@dimen/activity_edit_editor_textSize</item>
+
+        <!-- Custom attrs -->
         <item name="colorLineHighlight">@color/activity_edit_editor_colorLineHighlight</item>
+        <item name="colorLineNumberColumnBg">@color/activity_edit_editor_colorLineNumberColumnBg</item>
         <item name="lineNumberColumnPaddingLeft">@dimen/activity_edit_editor_lineNumberColumnPaddingLeft</item>
         <item name="lineNumberColumnPaddingRight">@dimen/activity_edit_editor_lineNumberColumnPaddingRight</item>
         <item name="showLineHighlight">true</item>

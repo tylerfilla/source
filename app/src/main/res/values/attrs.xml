@@ -6,6 +6,7 @@
         <attr name="showLineNumbers" format="boolean" />
 
         <attr name="colorLineHighlight" format="color" />
+        <attr name="colorLineNumberColumnBg" format="color" />
 
         <attr name="lineNumberColumnPaddingLeft" format="dimension" />
         <attr name="lineNumberColumnPaddingRight" format="dimension" />

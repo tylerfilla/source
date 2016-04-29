@@ -2,8 +2,8 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="io.microdev.source.EditActivity"
-    style="@style/Activity.Edit.Root">
+    style="@style/Activity.Edit.Root"
+    tools:context="io.microdev.source.EditActivity">
 
     <ScrollView
         android:id="@+id/activityEditScroll"

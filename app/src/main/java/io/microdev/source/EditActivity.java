@@ -28,6 +28,23 @@ public class EditActivity extends AppCompatActivity {
         // Get references to layout stuff
         scroll = (ScrollView) findViewById(R.id.activityEditScroll);
         editor = (Editor) findViewById(R.id.activityEditEditor);
+
+        // Listen for changes to editor content
+        editor.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+
+        });
     }
 
 }
