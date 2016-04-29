@@ -7,4 +7,6 @@
 
     <dimen name="activity_edit_editor_lineNumberColumnPaddingLeft">8dp</dimen>
     <dimen name="activity_edit_editor_lineNumberColumnPaddingRight">8dp</dimen>
+
+    <dimen name="activity_edit_toolbar_elevation">4dp</dimen>
 </resources>

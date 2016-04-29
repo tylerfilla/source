@@ -4,6 +4,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -23,13 +24,14 @@ public class EditActivity extends AppCompatActivity {
         // Show layout
         setContentView(R.layout.activity_edit);
 
+        // Set action bar to custom toolbar
+        setSupportActionBar((Toolbar) findViewById(R.id.activityEditToolbar));
+
         // Get action bar
         ActionBar actionBar = getSupportActionBar();
 
-        // Enable up arrow (left side of title)
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        // Enable up arrow to behave as home button
+        actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

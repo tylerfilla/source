@@ -2,36 +2,51 @@
 <resources>
 
     <style name="Activity.Edit.Root" parent="">
-        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
+    <style name="Activity.Edit.Toolbar" parent="">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:elevation">@dimen/activity_edit_toolbar_elevation</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_height">?attr/actionBarSize</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
     </style>
 
     <style name="Activity.Edit.Scroll" parent="">
         <item name="android:fillViewport">true</item>
-        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_below">@id/activityEditToolbar</item>
         <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">match_parent</item>
     </style>
 
     <style name="Activity.Edit.Editor" parent="">
         <!-- Android attrs -->
         <item name="android:fontFamily">monospace</item>
         <item name="android:imeOptions">flagNoExtractUi</item>
-        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:paddingBottom">@dimen/activity_edit_editor_paddingBottom</item>
         <item name="android:paddingTop">@dimen/activity_edit_editor_paddingTop</item>
         <item name="android:textSize">@dimen/activity_edit_editor_textSize</item>
 
         <!-- Custom attrs -->
         <item name="colorLineHighlight">@color/activity_edit_editor_colorLineHighlight</item>
-        <item name="colorLineNumberColumnBg">@color/activity_edit_editor_colorLineNumberColumnBg</item>
-        <item name="lineNumberColumnPaddingLeft">@dimen/activity_edit_editor_lineNumberColumnPaddingLeft</item>
-        <item name="lineNumberColumnPaddingRight">@dimen/activity_edit_editor_lineNumberColumnPaddingRight</item>
+        <item name="colorLineNumberColumnBg">@color/activity_edit_editor_colorLineNumberColumnBg
+        </item>
+        <item name="lineNumberColumnPaddingLeft">
+            @dimen/activity_edit_editor_lineNumberColumnPaddingLeft
+        </item>
+        <item name="lineNumberColumnPaddingRight">
+            @dimen/activity_edit_editor_lineNumberColumnPaddingRight
+        </item>
         <item name="showLineHighlight">true</item>
         <item name="showLineNumbers">true</item>
     </style>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
