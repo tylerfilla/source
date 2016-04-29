@@ -1,9 +1,12 @@
 package io.microdev.source;
 
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.widget.ScrollView;
 
 import io.microdev.source.widget.Editor;
@@ -19,6 +22,14 @@ public class EditActivity extends AppCompatActivity {
 
         // Show layout
         setContentView(R.layout.activity_edit);
+
+        // Get action bar
+        ActionBar actionBar = getSupportActionBar();
+
+        // Enable up arrow (left side of title)
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -45,6 +56,31 @@ public class EditActivity extends AppCompatActivity {
             }
 
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Switch against item ID to try to handle it
+        switch (item.getItemId()) {
+        case android.R.id.home:
+            // Home button pressed (configured as action bar up arrow)
+            // Finish activity
+            finish();
+            return true;
+        }
+
+        // Delegate to super if not handled
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void finish() {
+        // Opt for task removal if device supports it
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAndRemoveTask();
+        } else {
+            super.finish();
+        }
     }
 
 }
