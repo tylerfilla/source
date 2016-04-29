@@ -7,5 +7,8 @@
 
         <attr name="colorLineHighlight" format="color" />
 
+        <attr name="lineNumberColumnPaddingLeft" format="dimension" />
+        <attr name="lineNumberColumnPaddingRight" format="dimension" />
+
     </declare-styleable>
 </resources>

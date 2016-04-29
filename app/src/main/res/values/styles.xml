@@ -7,16 +7,21 @@
     </style>
 
     <style name="Activity.Edit.Scroll" parent="">
+        <item name="android:fillViewport">true</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
     </style>
 
     <style name="Activity.Edit.Editor" parent="">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:imeOptions">flagNoExtractUi</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:fontFamily">monospace</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:textSize">18sp</item>
         <item name="colorLineHighlight">@color/activity_edit_editor_colorLineHighlight</item>
+        <item name="lineNumberColumnPaddingLeft">@dimen/activity_edit_editor_lineNumberColumnPaddingLeft</item>
+        <item name="lineNumberColumnPaddingRight">@dimen/activity_edit_editor_lineNumberColumnPaddingRight</item>
         <item name="showLineHighlight">true</item>
         <item name="showLineNumbers">true</item>
     </style>
