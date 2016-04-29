@@ -2,6 +2,9 @@
 <resources>
     <dimen name="activity_edit_editor_textSize">18sp</dimen>
 
+    <dimen name="activity_edit_editor_paddingBottom">0dp</dimen>
+    <dimen name="activity_edit_editor_paddingTop">0dp</dimen>
+
     <dimen name="activity_edit_editor_lineNumberColumnPaddingLeft">8dp</dimen>
     <dimen name="activity_edit_editor_lineNumberColumnPaddingRight">8dp</dimen>
 </resources>

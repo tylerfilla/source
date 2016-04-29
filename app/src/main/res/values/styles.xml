@@ -18,6 +18,8 @@
         <item name="android:imeOptions">flagNoExtractUi</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">@dimen/activity_edit_editor_paddingBottom</item>
+        <item name="android:paddingTop">@dimen/activity_edit_editor_paddingTop</item>
         <item name="android:textSize">@dimen/activity_edit_editor_textSize</item>
 
         <!-- Custom attrs -->
