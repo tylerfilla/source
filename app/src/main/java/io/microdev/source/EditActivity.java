@@ -1,23 +1,24 @@
 package io.microdev.source;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import java.io.File;
 
@@ -26,10 +27,11 @@ import io.microdev.source.widget.Editor;
 
 public class EditActivity extends AppCompatActivity {
 
-    private Editor editor;
-
     private File file;
     private EditContext editContext;
+
+    private Editor editor;
+    private PopupMenu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +55,14 @@ public class EditActivity extends AppCompatActivity {
         // Set action bar to custom toolbar
         setSupportActionBar((Toolbar) findViewById(R.id.activityEditToolbar));
 
-        // Get action bar
-        ActionBar actionBar = getSupportActionBar();
+        // Enable action bar up arrow to behave as home button
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Enable up arrow to behave as home button
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        // Remove title from action bar
+        getSupportActionBar().setTitle(null);
+
+        // Create and configure overflow popup menu
+        menu = new PopupMenu(this, null);
     }
 
     @Override
@@ -66,23 +71,6 @@ public class EditActivity extends AppCompatActivity {
 
         // Get references to layout stuff
         editor = (Editor) findViewById(R.id.activityEditEditor);
-
-        // Listen for changes to editor content
-        editor.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-
-        });
     }
 
     @Override
@@ -90,6 +78,11 @@ public class EditActivity extends AppCompatActivity {
         // Inflate menu
         getMenuInflater().inflate(R.menu.activity_edit, menu);
 
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
         // If a file is being edited
         if (editContext == EditContext.FILE) {
             // Build title for filename menu item
@@ -105,7 +98,7 @@ public class EditActivity extends AppCompatActivity {
             menu.removeItem(R.id.menuActivityEditFilename);
         }
 
-        return super.onCreateOptionsMenu(menu);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -117,10 +110,32 @@ public class EditActivity extends AppCompatActivity {
             // Finish activity
             finish();
             return true;
+        case R.id.menuActivityEditUndo:
+            // Undo button pressed
+            // Instruct editor to undo last operation
+            editor.getUndoProvider().undo();
+            return true;
+        case R.id.menuActivityEditRedo:
+            // Redo button pressed
+            // Instruct editor to redo last operation
+            editor.getUndoProvider().redo();
+            return true;
         case R.id.menuActivityEditFilename:
             // Filename menu item pressed
             // Begin rename process
             displayDialogRename();
+            return true;
+        case R.id.menuActivityEditToggleWordWrap:
+            // Toggle checked state
+            item.setChecked(!item.isChecked());
+
+            // TODO: Apply setting
+            return true;
+        case R.id.menuActivityEditToggleSyntaxHighlighting:
+            // Toggle checked state
+            item.setChecked(!item.isChecked());
+
+            // TODO: Apply setting
             return true;
         default:
             // Delegate to super if not handled
@@ -144,20 +159,9 @@ public class EditActivity extends AppCompatActivity {
 
         // Set title and message from XML
         builder.setTitle(R.string.activity_edit_dialog_rename_title);
-        builder.setMessage(R.string.activity_edit_dialog_rename_message);
-
-        // Set cancel button
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                System.out.println("Pressed cancel button");
-            }
-
-        });
 
         // Set ok button
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.activity_edit_dialog_rename_button_rename, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -166,13 +170,54 @@ public class EditActivity extends AppCompatActivity {
 
         });
 
+        // Content layout for name input
+        FrameLayout contentLayout = new FrameLayout(this);
+
         // Create a text input for name entry
         EditText editTextName = new EditText(this);
         editTextName.setHint(file.getName());
-        builder.setView(editTextName);
+        editTextName.setText(file.getName());
+        editTextName.setSingleLine();
+        editTextName.selectAll();
+
+        // Set margins for name input
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        layoutParams.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        layoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        editTextName.setLayoutParams(layoutParams);
+
+        // Add name input to content layout
+        contentLayout.addView(editTextName);
+
+        // Add input to dialog
+        builder.setView(contentLayout);
 
         // Build and show dialog
-        builder.show();
+        final AlertDialog dialog = builder.show();
+
+        // Watch for text changes in name input
+        editTextName.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Disable OK button if no name is provided
+                if (s.length() > 0) {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+                } else {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+
+        });
     }
 
 }

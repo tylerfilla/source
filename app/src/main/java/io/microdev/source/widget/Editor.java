@@ -13,6 +13,11 @@ import android.view.Gravity;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
 
+import java.util.Deque;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingDeque;
+
 import io.microdev.source.R;
 
 public class Editor extends EditText {
@@ -38,12 +43,15 @@ public class Editor extends EditText {
     private Paint paintLineHighlight;
     private Paint paintLineNumberColumnBg;
 
-    private int paddingBumpLeft;
-    private boolean paddingRedirect;
-
     private Layout layout;
-    private int currentLineCount;
+
+    private int lineCountCurrent;
+    private int lineCountPrev;
+
     private float lineNumberColumnWidth;
+
+    private UndoProvider undoProvider;
+    private boolean textChangedInternally;
 
     public Editor(Context context) {
         super(context);
@@ -106,6 +114,9 @@ public class Editor extends EditText {
             public void onGlobalLayout() {
                 // Get current layout
                 layout = getLayout();
+
+                // Update line number column width
+                updateLineNumberColumnWidth();
             }
 
         });
@@ -114,36 +125,43 @@ public class Editor extends EditText {
         addTextChangedListener(new TextWatcher() {
 
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                System.out.println("change: " + s);
                 // If line count changed
-                if (getLineCount() != currentLineCount) {
+                if (getLineCount() != lineCountCurrent) {
                     // Store new line count
-                    currentLineCount = getLineCount();
+                    lineCountCurrent = getLineCount();
+                }
 
-                    // Update line number column width
-                    updateLineNumberColumnWidth();
+                // Check if text was changed by an undo/redo operation
+                if (textChangedInternally) {
+                    // Reset the flag for future use
+                    textChangedInternally = false;
+                } else {
+                    // Bump the undo provider
+                    undoProvider.bump();
                 }
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
+            public void afterTextChanged(Editable s) {
             }
 
         });
 
-        // Establish initial column width
-        post(new Runnable() {
+        // Create a new undo provider
+        undoProvider = new UndoProvider();
 
-            @Override
-            public void run() {
-                updateLineNumberColumnWidth();
-            }
+        // Establish undo baseline
+        undoProvider.reset();
 
-        });
+        // Give line numbering a little nudge
+        lineCountCurrent = 0;
+        lineCountPrev = -1;
     }
 
     private void setDefaultAttrs() {
@@ -200,7 +218,20 @@ public class Editor extends EditText {
         this.lineNumberColumnPaddingRight = lineNumberColumnPaddingRight;
     }
 
+    public UndoProvider getUndoProvider() {
+        return undoProvider;
+    }
+
     private void updateLineNumberColumnWidth() {
+        // If line count has changed since last layout
+        if (lineCountCurrent != lineCountPrev) {
+            // Mark count as not changed
+            lineCountPrev = lineCountCurrent;
+        } else {
+            // Skip this update
+            return;
+        }
+
         // Iterate over all lines and count non-soft-wrap lines
         int numberedLines = 0;
         for (int i = 0; i < getLineCount(); i++) {
@@ -213,10 +244,10 @@ public class Editor extends EditText {
         // Subtract old column width from left padding
         setPadding(getPaddingLeft() - (int) lineNumberColumnWidth, getPaddingTop(), getPaddingRight(), getPaddingBottom());
 
-        // Calculate starting width of line number column
+        // Calculate new width of line number column
         lineNumberColumnWidth = lineNumberColumnPaddingLeft + layout.getPaint().measureText(String.valueOf(numberedLines)) + lineNumberColumnPaddingRight;
 
-        // Bump left padding for new line number column
+        // Bump left padding for new column width
         setPadding(getPaddingLeft() + (int) lineNumberColumnWidth, getPaddingTop(), getPaddingRight(), getPaddingBottom());
     }
 
@@ -285,6 +316,186 @@ public class Editor extends EditText {
 
         // Continue to render as an EditText
         super.onDraw(canvas);
+    }
+
+    public class UndoProvider {
+
+        private static final long CHECK_PERIOD = 100L;
+        private static final long STORE_THRESHOLD = 500L;
+
+        private Deque<ContentFrame> stackUndo;
+        private Deque<ContentFrame> stackRedo;
+
+        private boolean stored;
+        private long timeLastBumped;
+
+        private UndoProvider() {
+            stackUndo = new LinkedBlockingDeque<>();
+            stackRedo = new LinkedBlockingDeque<>();
+
+            // Schedule timer to check necessity of an undo store
+            new Timer().scheduleAtFixedRate(new TimerTask() {
+
+                @Override
+                public void run() {
+                    if (!stored && System.currentTimeMillis() - timeLastBumped > STORE_THRESHOLD) {
+                        // Push current content onto undo stack for future undoing
+                        stackUndo.push(storeContentFrame());
+
+                        // Mark that content was stored for this bump series
+                        stored = true;
+                    }
+                }
+
+            }, 0L, CHECK_PERIOD);
+        }
+
+        public int getUndoCount() {
+            return stackUndo.size();
+        }
+
+        public int getRedoCount() {
+            return stackRedo.size();
+        }
+
+        public boolean getCanUndo() {
+            return !stackUndo.isEmpty();
+        }
+
+        public boolean getCanRedo() {
+            return !stackRedo.isEmpty();
+        }
+
+        public void undo() {
+            // Perform a single undo
+            undo(1);
+        }
+
+        public void undo(int count) {
+            for (int i = 0; i < count; i++) {
+                // Do not continue if undo stack only contains baseline
+                if (stackUndo.size() == 1) {
+                    break;
+                }
+
+                // Move topmost frame from undo stack to redo stack
+                stackRedo.push(stackUndo.pop());
+
+                // Change state to reflect new topmost frame on undo stack
+                applyContentFrame(stackUndo.peek());
+            }
+        }
+
+        public void redo() {
+            // Perform a single redo
+            redo(1);
+        }
+
+        public void redo(int count) {
+            for (int i = 0; i < count; i++) {
+                // Do not continue if redo stack is empty
+                if (stackRedo.isEmpty()) {
+                    break;
+                }
+
+                // Move topmost frame from redo stack to undo stack
+                stackUndo.push(stackRedo.pop());
+
+                // Change state to reflect new topmost frame on undo stack
+                applyContentFrame(stackUndo.peek());
+            }
+        }
+
+        private void reset() {
+            // Clear both undo and redo stacks
+            stackUndo.clear();
+            stackRedo.clear();
+
+            // Load current state into undo stack
+            stackUndo.push(storeContentFrame());
+        }
+
+        private void bump() {
+            // Reset for next undo storage
+            stored = false;
+
+            // Mark time of bump
+            timeLastBumped = System.currentTimeMillis();
+
+            // Clear the redo stack
+            stackRedo.clear();
+        }
+
+        private void applyContentFrame(final ContentFrame contentFrame) {
+            // Set editor text to that in content frame
+            post(new Runnable() {
+
+                @Override
+                public void run() {
+                    textChangedInternally = true;
+                    setText(contentFrame.getText());
+
+                    // Restore cursor offset clamped to new text length
+                    setSelection(contentFrame.getSelectionStart(), contentFrame.getSelectionEnd());
+                }
+
+            });
+        }
+
+        private ContentFrame storeContentFrame() {
+            // Create a new content frame to represent current content
+            ContentFrame contentFrame = new ContentFrame();
+
+            // Store selection info
+            contentFrame.setSelectionEnd(getSelectionEnd());
+            contentFrame.setSelectionStart(getSelectionStart());
+
+            // Store copy of editor text
+            contentFrame.setText(getText().subSequence(0, length()));
+
+            return contentFrame;
+        }
+
+        private class ContentFrame {
+
+            private int selectionEnd;
+            private int selectionStart;
+
+            private CharSequence text;
+
+            private ContentFrame() {
+                selectionEnd = 0;
+                selectionStart = 0;
+
+                text = null;
+            }
+
+            public int getSelectionEnd() {
+                return selectionEnd;
+            }
+
+            public void setSelectionEnd(int selectionEnd) {
+                this.selectionEnd = selectionEnd;
+            }
+
+            public int getSelectionStart() {
+                return selectionStart;
+            }
+
+            public void setSelectionStart(int selectionStart) {
+                this.selectionStart = selectionStart;
+            }
+
+            public CharSequence getText() {
+                return text;
+            }
+
+            public void setText(CharSequence text) {
+                this.text = text;
+            }
+
+        }
+
     }
 
 }
