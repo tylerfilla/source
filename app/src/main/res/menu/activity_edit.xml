@@ -4,8 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menuActivityEdit"
-        android:title="Name of file"
+        android:id="@+id/menuActivityEditFilename"
+        android:title="@null"
         app:showAsAction="never" />
 
 </menu>
