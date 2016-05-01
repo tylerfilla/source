@@ -58,7 +58,8 @@ public class Editor extends EditText {
     private float lineNumberColumnWidth;
 
     private UndoProvider undoProvider;
-    private boolean textChangedInternally;
+
+    private int textChangedInternally;
 
     public Editor(Context context) {
         super(context);
@@ -149,9 +150,9 @@ public class Editor extends EditText {
                 }
 
                 // Check if an operation internal to the editor changed the text
-                if (textChangedInternally) {
+                if (textChangedInternally > 0) {
                     // Reset the flag for future use
-                    textChangedInternally = false;
+                    textChangedInternally--;
                 } else {
                     // Bump the undo provider
                     undoProvider.bump();
@@ -349,7 +350,7 @@ public class Editor extends EditText {
             SavedState savedState = (SavedState) state;
 
             // Flag text as internally changed
-            textChangedInternally = true;
+            textChangedInternally += 2;
 
             // Pass super state to superclass
             super.onRestoreInstanceState(savedState.getSuperState());
@@ -558,7 +559,7 @@ public class Editor extends EditText {
                 @Override
                 public void run() {
                     // Set editor text to that in content frame
-                    textChangedInternally = true;
+                    textChangedInternally++;
                     setText(contentFrame.text);
 
                     // Restore cursor offset clamped to new text length
