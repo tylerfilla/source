@@ -124,7 +124,7 @@ public class EditActivity extends AppCompatActivity {
             // Instruct editor to redo last operation
             editor.redo();
             return true;
-        case R.id.menuActivityEditMenu:
+        case R.id.menuActivityEditMoreOptions:
             // Menu button pressed
             // Open popup menu
             return true;

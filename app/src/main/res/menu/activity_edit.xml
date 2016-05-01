@@ -16,8 +16,8 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuActivityEditMenu"
-        android:title="@string/menu_activity_edit_item_menu_title"
+        android:id="@+id/menuActivityEditMoreOptions"
+        android:title="@string/menu_activity_edit_item_more_options_title"
         android:icon="@drawable/ic_more_vert_white_24dp"
         app:showAsAction="always" />
 
