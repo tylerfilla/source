@@ -10,13 +10,14 @@ import android.os.Parcelable;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Selection;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
 
-import java.io.Serializable;
 import java.util.Deque;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -554,12 +555,79 @@ public class Editor extends EditText {
             return contentFrame;
         }
 
-        private class ContentFrame implements Serializable {
+        private class ContentFrame implements Parcelable {
 
             private int selectionEnd;
             private int selectionStart;
 
-            private CharSequence text; // TODO: Need to figure out how to serialize spans
+            private CharSequence text;
+
+            private ContentFrame() {
+                selectionEnd = 0;
+                selectionStart = 0;
+
+                text = null;
+            }
+
+            private ContentFrame(Parcel in) {
+                // Read selection bounds
+                selectionEnd = in.readInt();
+                selectionStart = in.readInt();
+
+                // Read whether text is spanned
+                boolean isSpanned = in.readInt() == 1;
+
+                // If text is spanned
+                if (isSpanned) {
+                    // Create builder for spannable string
+                    SpannableStringBuilder textBuilder = new SpannableStringBuilder();
+
+                    // TODO: Read spans
+
+                    // Read text
+                    text = textBuilder.append(in.readString());
+                } else {
+                    // Read text
+                    text = in.readString();
+                }
+            }
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(Parcel out, int flags) {
+                // Write selection bounds
+                out.writeInt(selectionEnd);
+                out.writeInt(selectionStart);
+
+                // Write whether text is spanned
+                out.writeInt(text instanceof Spanned ? 1 : 0);
+
+                // If text is spanned
+                if (text instanceof Spanned) {
+                    // TODO: Write spans
+                }
+
+                // Write text
+                out.writeString(text.toString());
+            }
+
+            public final Creator<ContentFrame> CREATOR = new Creator<ContentFrame>() {
+
+                @Override
+                public ContentFrame createFromParcel(Parcel in) {
+                    return new ContentFrame(in);
+                }
+
+                @Override
+                public ContentFrame[] newArray(int size) {
+                    return new ContentFrame[size];
+                }
+
+            };
 
         }
 
