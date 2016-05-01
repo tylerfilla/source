@@ -378,8 +378,8 @@ public class Editor extends EditText {
             super(source);
 
             // Read undo/redo stack arrays
-            undoProviderStackUndoArray = (UndoProvider.ContentFrame[]) source.readArray(UndoProvider.ContentFrame.class.getClassLoader());
-            undoProviderStackRedoArray = (UndoProvider.ContentFrame[]) source.readArray(UndoProvider.ContentFrame.class.getClassLoader());
+            undoProviderStackUndoArray = (UndoProvider.ContentFrame[]) source.readParcelableArray(UndoProvider.ContentFrame.class.getClassLoader());
+            undoProviderStackRedoArray = (UndoProvider.ContentFrame[]) source.readParcelableArray(UndoProvider.ContentFrame.class.getClassLoader());
         }
 
         public SavedState(Parcelable superState) {
@@ -391,8 +391,8 @@ public class Editor extends EditText {
             super.writeToParcel(out, flags);
 
             // Write undo/redo stack arrays
-            out.writeArray(undoProviderStackUndoArray);
-            out.writeArray(undoProviderStackRedoArray);
+            out.writeParcelableArray(undoProviderStackUndoArray, 0);
+            out.writeParcelableArray(undoProviderStackRedoArray, 0);
         }
 
         public final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {

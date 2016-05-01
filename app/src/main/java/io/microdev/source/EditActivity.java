@@ -89,6 +89,7 @@ public class EditActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        /*
         // If a file is being edited
         if (editContext == EditContext.FILE) {
             // Build title for filename menu item
@@ -103,6 +104,7 @@ public class EditActivity extends AppCompatActivity {
             // Remove filename menu item
             menu.removeItem(R.id.menuActivityEditFilename);
         }
+        */
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -126,6 +128,7 @@ public class EditActivity extends AppCompatActivity {
             // Instruct editor to redo last operation
             editor.getUndoProvider().redo();
             return true;
+        /*
         case R.id.menuActivityEditFilename:
             // Filename menu item pressed
             // Begin rename process
@@ -143,6 +146,7 @@ public class EditActivity extends AppCompatActivity {
 
             // TODO: Apply setting
             return true;
+            */
         default:
             // Delegate to super if not handled
             return super.onOptionsItemSelected(item);

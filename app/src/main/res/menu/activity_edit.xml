@@ -16,22 +16,9 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuActivityEditFilename"
-        android:title="@null"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/menuActivityEditToggleWordWrap"
-        android:checkable="true"
-        android:checked="true"
-        android:title="@string/menu_activity_edit_item_toggle_word_wrap_title"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/menuActivityEditToggleSyntaxHighlighting"
-        android:checkable="true"
-        android:checked="true"
-        android:title="@string/menu_activity_edit_item_toggle_syntax_highlighting_title"
-        app:showAsAction="never" />
+        android:id="@+id/menuActivityEditMenu"
+        android:title="@string/menu_activity_edit_item_menu_title"
+        android:icon="@drawable/ic_more_vert_white_24dp"
+        app:showAsAction="always" />
 
 </menu>
