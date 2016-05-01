@@ -229,8 +229,20 @@ public class Editor extends EditText {
         this.lineNumberColumnPaddingRight = lineNumberColumnPaddingRight;
     }
 
-    public UndoProvider getUndoProvider() {
-        return undoProvider;
+    public void undo() {
+        undoProvider.undo();
+    }
+
+    public void undo(int count) {
+        undoProvider.undo(count);
+    }
+
+    public void redo() {
+        undoProvider.redo();
+    }
+
+    public void redo(int count) {
+        undoProvider.redo(count);
     }
 
     private void updateLineNumberColumnWidth() {
@@ -438,40 +450,45 @@ public class Editor extends EditText {
 
                 @Override
                 public void run() {
+                    // If this bump series hasn't been stored and it's been long enough
                     if (!stored && System.currentTimeMillis() - timeLastBumped > STORE_THRESHOLD) {
-                        // Push current content onto undo stack for future undoing
-                        stackUndo.push(storeContentFrame());
-
-                        // Mark that content was stored for this bump series
-                        stored = true;
+                        // Store the bump series
+                        storeUndo();
                     }
                 }
 
             }, 0L, CHECK_PERIOD);
         }
 
-        public int getUndoCount() {
+        private int getUndoCount() {
             return stackUndo.size();
         }
 
-        public int getRedoCount() {
+        private int getRedoCount() {
             return stackRedo.size();
         }
 
-        public boolean getCanUndo() {
+        private boolean getCanUndo() {
             return !stackUndo.isEmpty();
         }
 
-        public boolean getCanRedo() {
+        private boolean getCanRedo() {
             return !stackRedo.isEmpty();
         }
 
-        public void undo() {
+        private void undo() {
             // Perform a single undo
             undo(1);
         }
 
-        public void undo(int count) {
+        private void undo(int count) {
+            // If current bump series hasn't yet been stored
+            if (!stored) {
+                // Short-circuit the bump series (a bit hacky, but it works)
+                storeUndo();
+            }
+
+            // Perform count undo ops
             for (int i = 0; i < count; i++) {
                 // Do not continue if undo stack only contains baseline
                 if (stackUndo.size() == 1) {
@@ -486,12 +503,12 @@ public class Editor extends EditText {
             }
         }
 
-        public void redo() {
+        private void redo() {
             // Perform a single redo
             redo(1);
         }
 
-        public void redo(int count) {
+        private void redo(int count) {
             for (int i = 0; i < count; i++) {
                 // Do not continue if redo stack is empty
                 if (stackRedo.isEmpty()) {
@@ -524,6 +541,14 @@ public class Editor extends EditText {
 
             // Clear the redo stack
             stackRedo.clear();
+        }
+
+        private void storeUndo() {
+            // Mark that content was stored for this bump series
+            stored = true;
+
+            // Push current content onto undo stack for future undoing
+            stackUndo.push(storeContentFrame());
         }
 
         private void applyContentFrame(final ContentFrame contentFrame) {

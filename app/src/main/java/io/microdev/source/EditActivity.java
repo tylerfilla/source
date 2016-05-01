@@ -1,7 +1,6 @@
 package io.microdev.source;
 
 import android.content.DialogInterface;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -9,10 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -121,32 +117,17 @@ public class EditActivity extends AppCompatActivity {
         case R.id.menuActivityEditUndo:
             // Undo button pressed
             // Instruct editor to undo last operation
-            editor.getUndoProvider().undo();
+            editor.undo();
             return true;
         case R.id.menuActivityEditRedo:
             // Redo button pressed
             // Instruct editor to redo last operation
-            editor.getUndoProvider().redo();
+            editor.redo();
             return true;
-        /*
-        case R.id.menuActivityEditFilename:
-            // Filename menu item pressed
-            // Begin rename process
-            displayDialogRename();
+        case R.id.menuActivityEditMenu:
+            // Menu button pressed
+            // Open popup menu
             return true;
-        case R.id.menuActivityEditToggleWordWrap:
-            // Toggle checked state
-            item.setChecked(!item.isChecked());
-
-            // TODO: Apply setting
-            return true;
-        case R.id.menuActivityEditToggleSyntaxHighlighting:
-            // Toggle checked state
-            item.setChecked(!item.isChecked());
-
-            // TODO: Apply setting
-            return true;
-            */
         default:
             // Delegate to super if not handled
             return super.onOptionsItemSelected(item);
