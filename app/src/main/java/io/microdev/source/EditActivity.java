@@ -27,7 +27,8 @@ public class EditActivity extends AppCompatActivity {
     private EditContext editContext;
 
     private Editor editor;
-    private PopupMenu menu;
+
+    private PopupMenu menuMoreOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +64,21 @@ public class EditActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("");
         }
 
-        // Create and configure overflow popup menu
-        menu = new PopupMenu(this, null);
+        // Create and configure "More options" menu
+        menuMoreOptions = new PopupMenu(this, findViewById(R.id.activityEditToolbar));
+        menuMoreOptions.inflate(R.menu.activity_edit);
+
+        // Listen for options menu item clicks
+        menuMoreOptions.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                System.out.println("click");
+                menuMoreOptions.show();
+                return true;
+            }
+
+        });
     }
 
     @Override
@@ -126,7 +140,8 @@ public class EditActivity extends AppCompatActivity {
             return true;
         case R.id.menuActivityEditMoreOptions:
             // Menu button pressed
-            // Open popup menu
+            // Show options popup menu
+            menuMoreOptions.show();
             return true;
         default:
             // Delegate to super if not handled
