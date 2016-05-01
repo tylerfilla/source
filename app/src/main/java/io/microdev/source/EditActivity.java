@@ -58,8 +58,14 @@ public class EditActivity extends AppCompatActivity {
         // Enable action bar up arrow to behave as home button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Remove title from action bar
-        getSupportActionBar().setTitle(null);
+        // Decide action bar title based on edit context
+        if (editContext == EditContext.FILE) {
+            // Set title to filename
+            getSupportActionBar().setTitle(file.getName());
+        } else if (editContext == EditContext.FREE) {
+            // Clear title
+            getSupportActionBar().setTitle("");
+        }
 
         // Create and configure overflow popup menu
         menu = new PopupMenu(this, null);

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Selection;
@@ -13,6 +16,7 @@ import android.view.Gravity;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
 
+import java.io.Serializable;
 import java.util.Deque;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -92,7 +96,12 @@ public class Editor extends EditText {
 
     private void initialize() {
         // Remove default underline and decor
-        setBackgroundDrawable(null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            setBackground(null);
+        } else {
+            //noinspection deprecation
+            setBackgroundDrawable(null);
+        }
 
         // Start from top and, depending on system RTL setting, left or right
         setGravity(Gravity.TOP | Gravity.START);
@@ -130,14 +139,13 @@ public class Editor extends EditText {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                System.out.println("change: " + s);
                 // If line count changed
                 if (getLineCount() != lineCountCurrent) {
                     // Store new line count
                     lineCountCurrent = getLineCount();
                 }
 
-                // Check if text was changed by an undo/redo operation
+                // Check if an operation internal to the editor changed the text
                 if (textChangedInternally) {
                     // Reset the flag for future use
                     textChangedInternally = false;
@@ -288,29 +296,29 @@ public class Editor extends EditText {
                 int line = layout.getLineForOffset(selStart);
 
                 // Preliminary edges of highlight region vertical bounds
-                float hrTop = layout.getLineTop(line) + getPaddingTop();
-                float hrBottom = layout.getLineBottom(line) + getPaddingTop();
+                float regionTop = layout.getLineTop(line) + getPaddingTop();
+                float regionBottom = layout.getLineBottom(line) + getPaddingTop();
 
                 // Preliminary edges of highlight region horizontal bounds
-                float hrLeft = layout.getLineLeft(line) + lineNumberColumnWidth;
-                float hrRight = getRight();
+                float regionLeft = layout.getLineLeft(line) + lineNumberColumnWidth;
+                float regionRight = getRight();
 
                 // Scan upwards for wrapped lines
                 int scanUp = line - 1;
                 while (scanUp >= 0 && !getText().subSequence(layout.getLineVisibleEnd(scanUp), layout.getLineEnd(scanUp)).toString().contains("\n")) {
-                    hrTop -= getLineHeight();
+                    regionTop -= getLineHeight();
                     scanUp--;
                 }
 
                 // Scan downwards for wrapped lines
                 int scanDown = line;
                 while (scanDown < getLineCount() - 1 && !getText().subSequence(layout.getLineVisibleEnd(scanDown), layout.getLineEnd(scanDown)).toString().contains("\n")) {
-                    hrBottom += getLineHeight();
+                    regionBottom += getLineHeight();
                     scanDown++;
                 }
 
                 // Draw highlight behind line
-                canvas.drawRect(hrLeft, hrTop, hrRight, hrBottom, paintLineHighlight);
+                canvas.drawRect(regionLeft, regionTop, regionRight, regionBottom, paintLineHighlight);
             }
         }
 
@@ -318,10 +326,94 @@ public class Editor extends EditText {
         super.onDraw(canvas);
     }
 
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        // Check if state is ours
+        if (state instanceof SavedState) {
+            // Make it our own
+            SavedState savedState = (SavedState) state;
+
+            // Flag text as internally changed
+            textChangedInternally = true;
+
+            // Pass super state to superclass
+            super.onRestoreInstanceState(savedState.getSuperState());
+
+            // Restore undo/redo stacks
+            undoProvider.stackUndo.clear();
+            for (int i = 0; i < savedState.undoProviderStackUndoArray.length; i++) {
+                undoProvider.stackUndo.addLast(savedState.undoProviderStackUndoArray[i]);
+            }
+            undoProvider.stackRedo.clear();
+            for (int i = 0; i < savedState.undoProviderStackRedoArray.length; i++) {
+                undoProvider.stackRedo.addLast(savedState.undoProviderStackRedoArray[i]);
+            }
+        } else {
+            // Not for us, pass it on
+            super.onRestoreInstanceState(state);
+        }
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        // Create a stateful object based on super state
+        SavedState savedState = new SavedState(super.onSaveInstanceState());
+
+        // Save undo/redo stacks as arrays of ContentFrame
+        savedState.undoProviderStackUndoArray = undoProvider.stackUndo.toArray(new UndoProvider.ContentFrame[undoProvider.stackUndo.size()]);
+        savedState.undoProviderStackRedoArray = undoProvider.stackRedo.toArray(new UndoProvider.ContentFrame[undoProvider.stackRedo.size()]);
+
+        return savedState;
+    }
+
+    private class SavedState extends BaseSavedState {
+
+        private UndoProvider.ContentFrame[] undoProviderStackUndoArray;
+        private UndoProvider.ContentFrame[] undoProviderStackRedoArray;
+
+        public SavedState(Parcel source) {
+            super(source);
+
+            // Read undo/redo stack arrays
+            undoProviderStackUndoArray = (UndoProvider.ContentFrame[]) source.readArray(UndoProvider.ContentFrame.class.getClassLoader());
+            undoProviderStackRedoArray = (UndoProvider.ContentFrame[]) source.readArray(UndoProvider.ContentFrame.class.getClassLoader());
+        }
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+
+            // Write undo/redo stack arrays
+            out.writeArray(undoProviderStackUndoArray);
+            out.writeArray(undoProviderStackRedoArray);
+        }
+
+        public final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+
+            @Override
+            public SavedState createFromParcel(Parcel parcel) {
+                return new SavedState(parcel);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+
+        };
+
+    }
+
     public class UndoProvider {
 
         private static final long CHECK_PERIOD = 100L;
         private static final long STORE_THRESHOLD = 500L;
+
+        private Timer timer;
 
         private Deque<ContentFrame> stackUndo;
         private Deque<ContentFrame> stackRedo;
@@ -330,11 +422,16 @@ public class Editor extends EditText {
         private long timeLastBumped;
 
         private UndoProvider() {
+            timer = new Timer();
+
             stackUndo = new LinkedBlockingDeque<>();
             stackRedo = new LinkedBlockingDeque<>();
 
+            stored = true;
+            timeLastBumped = System.currentTimeMillis();
+
             // Schedule timer to check necessity of an undo store
-            new Timer().scheduleAtFixedRate(new TimerTask() {
+            timer.scheduleAtFixedRate(new TimerTask() {
 
                 @Override
                 public void run() {
@@ -427,16 +524,17 @@ public class Editor extends EditText {
         }
 
         private void applyContentFrame(final ContentFrame contentFrame) {
-            // Set editor text to that in content frame
+            // Apply content on the UI thread
             post(new Runnable() {
 
                 @Override
                 public void run() {
+                    // Set editor text to that in content frame
                     textChangedInternally = true;
-                    setText(contentFrame.getText());
+                    setText(contentFrame.text);
 
                     // Restore cursor offset clamped to new text length
-                    setSelection(contentFrame.getSelectionStart(), contentFrame.getSelectionEnd());
+                    setSelection(contentFrame.selectionStart, contentFrame.selectionEnd);
                 }
 
             });
@@ -447,52 +545,21 @@ public class Editor extends EditText {
             ContentFrame contentFrame = new ContentFrame();
 
             // Store selection info
-            contentFrame.setSelectionEnd(getSelectionEnd());
-            contentFrame.setSelectionStart(getSelectionStart());
+            contentFrame.selectionEnd = getSelectionEnd();
+            contentFrame.selectionStart = getSelectionStart();
 
             // Store copy of editor text
-            contentFrame.setText(getText().subSequence(0, length()));
+            contentFrame.text = getText().subSequence(0, length());
 
             return contentFrame;
         }
 
-        private class ContentFrame {
+        private class ContentFrame implements Serializable {
 
             private int selectionEnd;
             private int selectionStart;
 
-            private CharSequence text;
-
-            private ContentFrame() {
-                selectionEnd = 0;
-                selectionStart = 0;
-
-                text = null;
-            }
-
-            public int getSelectionEnd() {
-                return selectionEnd;
-            }
-
-            public void setSelectionEnd(int selectionEnd) {
-                this.selectionEnd = selectionEnd;
-            }
-
-            public int getSelectionStart() {
-                return selectionStart;
-            }
-
-            public void setSelectionStart(int selectionStart) {
-                this.selectionStart = selectionStart;
-            }
-
-            public CharSequence getText() {
-                return text;
-            }
-
-            public void setText(CharSequence text) {
-                this.text = text;
-            }
+            private CharSequence text; // TODO: Need to figure out how to serialize spans
 
         }
 
