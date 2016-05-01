@@ -9,7 +9,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.Editable;
 import android.text.Layout;
+import android.text.ParcelableSpan;
 import android.text.Selection;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
@@ -582,10 +584,28 @@ public class Editor extends EditText {
                     // Create builder for spannable string
                     SpannableStringBuilder textBuilder = new SpannableStringBuilder();
 
-                    // TODO: Read spans
-
                     // Read text
-                    text = textBuilder.append(in.readString());
+                    textBuilder.append(in.readString());
+
+                    // Read number of spans
+                    int numSpans = in.readInt();
+
+                    // Read spans and properties iteratively
+                    for (int i = 0; i < numSpans; i++) {
+                        // Read span
+                        ParcelableSpan span = in.readParcelable(ParcelableSpan.class.getClassLoader());
+
+                        // Read properties
+                        int start = in.readInt();
+                        int end = in.readInt();
+                        int flags = in.readInt();
+
+                        // Apply span
+                        textBuilder.setSpan(span, start, end, flags);
+                    }
+
+                    // Save text instance
+                    text = textBuilder;
                 } else {
                     // Read text
                     text = in.readString();
@@ -606,13 +626,30 @@ public class Editor extends EditText {
                 // Write whether text is spanned
                 out.writeInt(text instanceof Spanned ? 1 : 0);
 
-                // If text is spanned
-                if (text instanceof Spanned) {
-                    // TODO: Write spans
-                }
-
                 // Write text
                 out.writeString(text.toString());
+
+                // If text is spanned
+                if (text instanceof Spanned) {
+                    Spannable textSpanned = (Spannable) text;
+
+                    // Get all parcelable spans
+                    ParcelableSpan[] spans = textSpanned.getSpans(0, textSpanned.length(), ParcelableSpan.class);
+
+                    // Write number of spans
+                    out.writeInt(spans.length);
+
+                    // Write spans and properties iteratively
+                    for (ParcelableSpan span : spans) {
+                        // Write span
+                        out.writeParcelable(span, 0);
+
+                        // Write properties
+                        out.writeInt(textSpanned.getSpanStart(span));
+                        out.writeInt(textSpanned.getSpanEnd(span));
+                        out.writeInt(textSpanned.getSpanFlags(span));
+                    }
+                }
             }
 
             public final Creator<ContentFrame> CREATOR = new Creator<ContentFrame>() {
