@@ -5,7 +5,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,12 +12,14 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
 import java.io.File;
 
 import io.microdev.source.core.EditContext;
+import io.microdev.source.util.Receiver;
 import io.microdev.source.widget.Editor;
 
 public class EditActivity extends AppCompatActivity {
@@ -27,8 +28,6 @@ public class EditActivity extends AppCompatActivity {
     private EditContext editContext;
 
     private Editor editor;
-
-    private PopupMenu menuMoreOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,22 +62,6 @@ public class EditActivity extends AppCompatActivity {
             // Clear title
             getSupportActionBar().setTitle("");
         }
-
-        // Create and configure "More options" menu
-        menuMoreOptions = new PopupMenu(this, findViewById(R.id.activityEditToolbar));
-        menuMoreOptions.inflate(R.menu.activity_edit);
-
-        // Listen for options menu item clicks
-        menuMoreOptions.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                System.out.println("click");
-                menuMoreOptions.show();
-                return true;
-            }
-
-        });
     }
 
     @Override
@@ -95,28 +78,6 @@ public class EditActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.activity_edit, menu);
 
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        /*
-        // If a file is being edited
-        if (editContext == EditContext.FILE) {
-            // Build title for filename menu item
-            SpannableStringBuilder menuFilenameTitleBuilder = new SpannableStringBuilder();
-            menuFilenameTitleBuilder.append(file.getName());
-            menuFilenameTitleBuilder.setSpan(new StyleSpan(Typeface.BOLD), 0, menuFilenameTitleBuilder.length(), 0);
-            menuFilenameTitleBuilder.setSpan(new RelativeSizeSpan(1.1f), 0, menuFilenameTitleBuilder.length(), 0);
-
-            // Set title
-            menu.findItem(R.id.menuActivityEditFilename).setTitle(menuFilenameTitleBuilder);
-        } else if (editContext == EditContext.FREE) {
-            // Remove filename menu item
-            menu.removeItem(R.id.menuActivityEditFilename);
-        }
-        */
-
-        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -140,8 +101,15 @@ public class EditActivity extends AppCompatActivity {
             return true;
         case R.id.menuActivityEditMoreOptions:
             // Menu button pressed
-            // Show options popup menu
-            menuMoreOptions.show();
+            // TODO: Show options popup menu
+            displayDialogRename(new Receiver<String>() {
+
+                @Override
+                public void put(String obj) {
+                    System.out.println("received: " + obj);
+                }
+
+            });
             return true;
         default:
             // Delegate to super if not handled
@@ -159,30 +127,23 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
-    private void displayDialogRename() {
+    private void displayDialogRename(final Receiver<String> receiver) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Set title and message from XML
-        builder.setTitle(R.string.activity_edit_dialog_rename_title);
-
-        // Set ok button
-        builder.setPositiveButton(R.string.activity_edit_dialog_rename_button_rename, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                System.out.println("Pressed ok button");
-            }
-
-        });
+        builder.setTitle(R.string.dialog_activity_edit_rename_title);
 
         // Content layout for name input
         FrameLayout contentLayout = new FrameLayout(this);
 
+        // Get old or default file name
+        String oldName = file == null ? getString(R.string._default_document_name) : file.getName();
+
         // Create a text input for name entry
-        EditText editTextName = new EditText(this);
-        editTextName.setHint(file.getName());
-        editTextName.setText(file.getName());
+        final EditText editTextName = new EditText(this);
+        editTextName.setHint(oldName);
+        editTextName.setText(oldName);
         editTextName.setSingleLine();
         editTextName.selectAll();
 
@@ -199,8 +160,25 @@ public class EditActivity extends AppCompatActivity {
         // Add input to dialog
         builder.setView(contentLayout);
 
-        // Build and show dialog
+        // Set up cancel button
+        builder.setNegativeButton(R.string.dialog_activity_edit_rename_button_cancel, null);
+
+        // Set up OK button
+        builder.setPositiveButton(R.string.dialog_activity_edit_rename_button_rename, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Pass new name to receiver
+                receiver.put(editTextName.getText().toString());
+            }
+
+        });
+
+        // Build and show the dialog
         final AlertDialog dialog = builder.show();
+
+        // Show the keyboard during the dialog interaction
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
         // Watch for text changes in name input
         editTextName.addTextChangedListener(new TextWatcher() {

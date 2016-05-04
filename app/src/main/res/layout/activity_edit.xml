@@ -21,4 +21,10 @@
 
     </ScrollView>
 
+    <LinearLayout
+        android:id="@+id/activityEditQuickBar"
+        style="@style/Activity.Edit.QuickBar">
+
+    </LinearLayout>
+
 </RelativeLayout>

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <dimen name="activity_edit_toolbar_elevation">4dp</dimen>
+
     <dimen name="activity_edit_editor_textSize">18sp</dimen>
 
     <dimen name="activity_edit_editor_paddingBottom">0dp</dimen>
@@ -8,5 +11,7 @@
     <dimen name="activity_edit_editor_lineNumberColumnPaddingLeft">8dp</dimen>
     <dimen name="activity_edit_editor_lineNumberColumnPaddingRight">8dp</dimen>
 
-    <dimen name="activity_edit_toolbar_elevation">4dp</dimen>
+    <dimen name="activity_edit_quickbar_elevation">2dp</dimen>
+    <dimen name="activity_edit_quickbar_height">48dp</dimen>
+
 </resources>

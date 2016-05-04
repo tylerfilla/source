@@ -17,6 +17,7 @@
 
     <style name="Activity.Edit.Scroll" parent="">
         <item name="android:fillViewport">true</item>
+        <item name="android:layout_above">@id/activityEditQuickBar</item>
         <item name="android:layout_below">@id/activityEditToolbar</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">match_parent</item>
@@ -24,26 +25,29 @@
 
     <style name="Activity.Edit.Editor" parent="">
         <!-- Android attrs -->
-        <item name="android:fontFamily">monospace</item>
         <item name="android:imeOptions">flagNoExtractUi</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:paddingBottom">@dimen/activity_edit_editor_paddingBottom</item>
         <item name="android:paddingTop">@dimen/activity_edit_editor_paddingTop</item>
         <item name="android:textSize">@dimen/activity_edit_editor_textSize</item>
+        <item name="android:typeface">monospace</item>
 
         <!-- Custom attrs -->
         <item name="colorLineHighlight">@color/activity_edit_editor_colorLineHighlight</item>
-        <item name="colorLineNumberColumnBg">@color/activity_edit_editor_colorLineNumberColumnBg
-        </item>
-        <item name="lineNumberColumnPaddingLeft">
-            @dimen/activity_edit_editor_lineNumberColumnPaddingLeft
-        </item>
-        <item name="lineNumberColumnPaddingRight">
-            @dimen/activity_edit_editor_lineNumberColumnPaddingRight
-        </item>
+        <item name="colorLineNumberColumnBg">@color/activity_edit_editor_colorLineNumberColumnBg</item>
+        <item name="lineNumberColumnPaddingLeft">@dimen/activity_edit_editor_lineNumberColumnPaddingLeft</item>
+        <item name="lineNumberColumnPaddingRight">@dimen/activity_edit_editor_lineNumberColumnPaddingRight</item>
         <item name="showLineHighlight">true</item>
         <item name="showLineNumbers">true</item>
+    </style>
+
+    <style name="Activity.Edit.QuickBar" parent="">
+        <item name="android:elevation" tools:targetApi="21">@dimen/activity_edit_quickbar_elevation</item>
+        <item name="android:layout_alignParentBottom">true</item>
+        <item name="android:layout_height">@dimen/activity_edit_quickbar_height</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:orientation">horizontal</item>
     </style>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">

@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Source</string>
 
-    <string name="activity_edit_dialog_rename_title">Rename file</string>
-    <string name="activity_edit_dialog_rename_button_cancel">Cancel</string>
-    <string name="activity_edit_dialog_rename_button_rename">Rename</string>
+    <string name="dialog_activity_edit_rename_title">Rename file</string>
+    <string name="dialog_activity_edit_rename_button_cancel">Cancel</string>
+    <string name="dialog_activity_edit_rename_button_rename">Rename</string>
 
     <string name="menu_activity_edit_item_undo_title">Undo</string>
     <string name="menu_activity_edit_item_redo_title">Redo</string>
+    <string name="menu_activity_edit_item_insert_title">Insert</string>
     <string name="menu_activity_edit_item_more_options_title">More options</string>
+
+    <string name="_default_document_name">Untitled</string>
+
 </resources>

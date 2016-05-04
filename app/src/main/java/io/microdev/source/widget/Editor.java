@@ -277,6 +277,12 @@ public class Editor extends EditText {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // If rendering in edit mode
+        if (isInEditMode()) {
+            canvas.drawText("[ Editor ]", 0f, 0f, getPaint());
+            return;
+        }
+
         // Render line numbers if preferred
         if (showLineNumbers) {
             // Draw line number column background
