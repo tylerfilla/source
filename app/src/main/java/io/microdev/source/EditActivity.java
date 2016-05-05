@@ -20,7 +20,7 @@ import java.io.File;
 
 import io.microdev.source.core.EditContext;
 import io.microdev.source.util.Receiver;
-import io.microdev.source.widget.Editor;
+import io.microdev.source.widget.editor.Editor;
 
 public class EditActivity extends AppCompatActivity {
 

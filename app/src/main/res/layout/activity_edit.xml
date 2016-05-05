@@ -15,7 +15,7 @@
         android:id="@+id/activityEditScroll"
         style="@style/Activity.Edit.Scroll">
 
-        <io.microdev.source.widget.Editor
+        <io.microdev.source.widget.editor.Editor
             android:id="@+id/activityEditEditor"
             style="@style/Activity.Edit.Editor" />
 

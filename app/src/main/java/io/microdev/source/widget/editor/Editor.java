@@ -1,4 +1,4 @@
-package io.microdev.source.widget;
+package io.microdev.source.widget.editor;
 
 import android.content.Context;
 import android.content.res.TypedArray;
