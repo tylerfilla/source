@@ -14,11 +14,4 @@
 
     </declare-styleable>
 
-    <declare-styleable name="ScrollInterface">
-
-        <attr name="scrollH" format="reference" />
-        <attr name="scrollV" format="reference" />
-
-    </declare-styleable>
-
 </resources>
