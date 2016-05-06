@@ -79,21 +79,21 @@ public class Editor extends EditText {
         setDefaultAttrs();
 
         // Get styled attributes array
-        TypedArray styleAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.Editor, 0, 0);
+        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.Editor, 0, 0);
 
         /* Read XML attrs */
 
-        colorLineHighlight = styleAttrs.getColor(R.styleable.Editor_colorLineHighlight, colorLineHighlight);
-        colorLineNumberColumnBg = styleAttrs.getColor(R.styleable.Editor_colorLineNumberColumnBg, colorLineNumberColumnBg);
+        colorLineHighlight = styledAttrs.getColor(R.styleable.Editor_colorLineHighlight, colorLineHighlight);
+        colorLineNumberColumnBg = styledAttrs.getColor(R.styleable.Editor_colorLineNumberColumnBg, colorLineNumberColumnBg);
 
-        showLineHighlight = styleAttrs.getBoolean(R.styleable.Editor_showLineHighlight, showLineHighlight);
-        showLineNumbers = styleAttrs.getBoolean(R.styleable.Editor_showLineNumbers, showLineNumbers);
+        showLineHighlight = styledAttrs.getBoolean(R.styleable.Editor_showLineHighlight, showLineHighlight);
+        showLineNumbers = styledAttrs.getBoolean(R.styleable.Editor_showLineNumbers, showLineNumbers);
 
-        lineNumberColumnPaddingLeft = styleAttrs.getDimension(R.styleable.Editor_lineNumberColumnPaddingLeft, lineNumberColumnPaddingLeft);
-        lineNumberColumnPaddingRight = styleAttrs.getDimension(R.styleable.Editor_lineNumberColumnPaddingLeft, lineNumberColumnPaddingRight);
+        lineNumberColumnPaddingLeft = styledAttrs.getDimension(R.styleable.Editor_lineNumberColumnPaddingLeft, lineNumberColumnPaddingLeft);
+        lineNumberColumnPaddingRight = styledAttrs.getDimension(R.styleable.Editor_lineNumberColumnPaddingLeft, lineNumberColumnPaddingRight);
 
         // Recycle styled attributes array
-        styleAttrs.recycle();
+        styledAttrs.recycle();
 
         // Common initializer
         initialize();

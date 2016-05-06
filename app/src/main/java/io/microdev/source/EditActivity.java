@@ -1,6 +1,9 @@
 package io.microdev.source;
 
+import android.app.ActivityManager;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -61,6 +64,23 @@ public class EditActivity extends AppCompatActivity {
         } else if (editContext == EditContext.FREE) {
             // Clear title
             getSupportActionBar().setTitle("");
+        }
+
+        // Handle task description on supported versions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Get app icon
+            Bitmap icon = BitmapFactory.decodeResource(getResources(), android.R.drawable.sym_def_app_icon);
+
+            // Resolve primary color
+            int colorPrimary;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                colorPrimary = getColor(R.color.colorPrimary);
+            } else {
+                colorPrimary = getResources().getColor(R.color.colorPrimary);
+            }
+
+            // Set task description
+            setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
         }
     }
 

@@ -27,6 +27,10 @@
 
     </HorizontalScrollView>
 
+    <io.microdev.source.widget.scrollinterface.ScrollInterface
+        android:id="@+id/activityEditScrollInterface"
+        style="@style/Activity.Edit.ScrollInterface" />
+
     <LinearLayout
         android:id="@+id/activityEditQuickBar"
         style="@style/Activity.Edit.QuickBar">

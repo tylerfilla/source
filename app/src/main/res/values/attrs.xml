@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <declare-styleable name="Editor">
 
         <attr name="showLineHighlight" format="boolean" />
@@ -12,4 +13,12 @@
         <attr name="lineNumberColumnPaddingRight" format="dimension" />
 
     </declare-styleable>
+
+    <declare-styleable name="ScrollInterface">
+
+        <attr name="scrollH" format="reference" />
+        <attr name="scrollV" format="reference" />
+
+    </declare-styleable>
+
 </resources>
