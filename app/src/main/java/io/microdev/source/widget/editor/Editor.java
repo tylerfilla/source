@@ -17,6 +17,7 @@ import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
 
@@ -346,6 +347,11 @@ public class Editor extends EditText {
 
         // Continue to render as an EditText
         super.onDraw(canvas);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return super.onTouchEvent(event);
     }
 
     @Override

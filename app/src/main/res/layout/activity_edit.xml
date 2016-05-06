@@ -11,15 +11,21 @@
         style="@style/Activity.Edit.Toolbar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <ScrollView
-        android:id="@+id/activityEditScroll"
-        style="@style/Activity.Edit.Scroll">
+    <HorizontalScrollView
+        android:id="@+id/activityEditScrollH"
+        style="@style/Activity.Edit.ScrollH">
 
-        <io.microdev.source.widget.editor.Editor
-            android:id="@+id/activityEditEditor"
-            style="@style/Activity.Edit.Editor" />
+        <ScrollView
+            android:id="@+id/activityEditScrollV"
+            style="@style/Activity.Edit.ScrollV">
 
-    </ScrollView>
+            <io.microdev.source.widget.editor.Editor
+                android:id="@+id/activityEditEditor"
+                style="@style/Activity.Edit.Editor" />
+
+        </ScrollView>
+
+    </HorizontalScrollView>
 
     <LinearLayout
         android:id="@+id/activityEditQuickBar"

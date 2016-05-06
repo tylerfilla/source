@@ -15,12 +15,20 @@
         <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
     </style>
 
-    <style name="Activity.Edit.Scroll" parent="">
+    <style name="Activity.Edit.ScrollH" parent="">
         <item name="android:fillViewport">true</item>
         <item name="android:layout_above">@id/activityEditQuickBar</item>
         <item name="android:layout_below">@id/activityEditToolbar</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">match_parent</item>
+        <item name="android:scrollbars">vertical</item>
+    </style>
+
+    <style name="Activity.Edit.ScrollV" parent="">
+        <item name="android:fillViewport">true</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:scrollbars">horizontal</item>
     </style>
 
     <style name="Activity.Edit.Editor" parent="">
