@@ -14,4 +14,11 @@
 
     </declare-styleable>
 
+    <declare-styleable name="PanView">
+
+        <attr name="fillViewportHeight" format="boolean" />
+        <attr name="fillViewportWidth" format="boolean" />
+
+    </declare-styleable>
+
 </resources>

@@ -21,6 +21,8 @@
         <item name="android:layout_below">@id/activityEditToolbar</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">match_parent</item>
+        <item name="fillViewportHeight">true</item>
+        <item name="fillViewportWidth">true</item>
     </style>
 
     <style name="Activity.Edit.Editor" parent="">

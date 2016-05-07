@@ -11,7 +11,7 @@
         style="@style/Activity.Edit.Toolbar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <io.microdev.source.widget.paninterface.PanInterface
+    <io.microdev.source.widget.panview.PanView
         android:id="@+id/activityEditPanInterface"
         style="@style/Activity.Edit.PanInterface">
 
@@ -19,7 +19,7 @@
             android:id="@+id/activityEditEditor"
             style="@style/Activity.Edit.Editor" />
 
-    </io.microdev.source.widget.paninterface.PanInterface>
+    </io.microdev.source.widget.panview.PanView>
 
     <LinearLayout
         android:id="@+id/activityEditQuickBar"
