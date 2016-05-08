@@ -15,7 +15,7 @@ import io.microdev.source.R;
 
 public class PanView extends FrameLayout {
 
-    private static final long SCROLL_CHANGE_EXPIRATION = 200000l;
+    private static final long SCROLL_CHANGE_EXPIRATION = 200000000l;
 
     private HorizontalScrollView scrollH;
     private ScrollView scrollV;
@@ -57,7 +57,7 @@ public class PanView extends FrameLayout {
         initialize();
 
         // Get styled attributes array
-        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PanView, 0, 0);
+        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PanView, defStyleAttr, defStyleRes);
 
         fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, false);
         fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, false);

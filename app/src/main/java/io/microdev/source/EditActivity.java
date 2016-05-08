@@ -90,6 +90,8 @@ public class EditActivity extends AppCompatActivity {
 
         // Get references to layout stuff
         editor = (Editor) findViewById(R.id.activityEditEditor);
+
+        editor.getSyntaxHighlighter().addRule(new Editor.SyntaxHighlighter.RegexRule());
     }
 
     @Override

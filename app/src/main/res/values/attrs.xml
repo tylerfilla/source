@@ -12,6 +12,8 @@
         <attr name="lineNumberColumnPaddingLeft" format="dimension" />
         <attr name="lineNumberColumnPaddingRight" format="dimension" />
 
+        <attr name="enableSyntaxHighlighting" format="boolean" />
+
     </declare-styleable>
 
     <declare-styleable name="PanView">
