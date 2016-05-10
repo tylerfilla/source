@@ -15,7 +15,7 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
@@ -143,9 +143,14 @@ public class EditActivity extends AppCompatActivity {
         // Content layout for name input
         FrameLayout contentLayout = new FrameLayout(this);
 
+        // Get name of file before change
+        final String nameBefore = file == null ? getString(R.string._default_document_name) : file.getName();
+
         // Create a text input for name entry
         final EditText editTextName = new EditText(this);
-        editTextName.setText(file == null ? getString(R.string._default_document_name) : file.getName());
+        editTextName.setText(nameBefore);
+        editTextName.setHint(nameBefore);
+        editTextName.setSingleLine();
         editTextName.selectAll();
 
         // Set margins for name input
@@ -175,11 +180,19 @@ public class EditActivity extends AppCompatActivity {
 
         });
 
-        // Build and show the dialog
-        final AlertDialog dialog = builder.show();
+        // Build the dialog
+        final AlertDialog dialog = builder.create();
 
-        // Show the soft keyboard
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        // Listen for dialog show
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                // Show the soft keyboard
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(editTextName, InputMethodManager.SHOW_IMPLICIT);
+            }
+
+        });
 
         // Watch for text changes in name input box
         editTextName.addTextChangedListener(new TextWatcher() {
@@ -190,8 +203,8 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Disable OK button if name box is empty
-                if (s.length() > 0) {
+                // Disable OK button if name box is empty or unchanged
+                if (s.length() > 0 && !s.toString().equals(nameBefore)) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
@@ -203,6 +216,12 @@ public class EditActivity extends AppCompatActivity {
             }
 
         });
+
+        // Show the dialog
+        dialog.show();
+
+        // Initially disable the OK button
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
 }
