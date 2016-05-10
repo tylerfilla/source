@@ -19,16 +19,15 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
-import com.gmail.tylerfilla.android.widget.editorsourcetext.EditorSourceText;
-
 import java.io.File;
 
 import io.microdev.source.util.Callback;
+import io.microdev.source.widget.editortext.EditorText;
 
 public class EditActivity extends AppCompatActivity {
 
     private File file;
-    private EditorSourceText editor;
+    private EditorText editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +43,7 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
 
         // Get editor view
-        editor = (EditorSourceText) findViewById(R.id.activityEditEditor);
+        editor = (EditorText) findViewById(R.id.activityEditEditor);
 
         // Set action bar to custom toolbar
         setSupportActionBar((Toolbar) findViewById(R.id.activityEditToolbar));

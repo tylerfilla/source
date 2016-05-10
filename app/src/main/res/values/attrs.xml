@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="EditorSourceText">
+    <declare-styleable name="EditorText">
 
         <attr name="showLineHighlight" format="boolean" />
         <attr name="showLineNumbers" format="boolean" />

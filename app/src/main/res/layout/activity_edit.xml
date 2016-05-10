@@ -11,15 +11,15 @@
         style="@style/Activity.Edit.Toolbar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <com.gmail.tylerfilla.android.widget.panview.PanView
+    <io.microdev.source.widget.panview.PanView
         android:id="@+id/activityEditPanInterface"
         style="@style/Activity.Edit.PanInterface">
 
-        <com.gmail.tylerfilla.android.widget.editorsourcetext.EditorSourceText
+        <io.microdev.source.widget.editortext.EditorText
             android:id="@+id/activityEditEditor"
             style="@style/Activity.Edit.Editor" />
 
-    </com.gmail.tylerfilla.android.widget.panview.PanView>
+    </io.microdev.source.widget.panview.PanView>
 
     <LinearLayout
         android:id="@+id/activityEditQuickBar"

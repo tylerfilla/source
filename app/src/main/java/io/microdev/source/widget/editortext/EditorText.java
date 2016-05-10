@@ -1,4 +1,4 @@
-package io.microdev.source.widget.editorsourcetext;
+package io.microdev.source.widget.editortext;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -28,7 +28,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import io.microdev.source.R;
 
-public class EditorSourceText extends EditText {
+public class EditorText extends EditText {
 
     private static final int DEF_COLOR_LINE_HIGHLIGHT = 0x2040c4ff;
     private static final int DEF_COLOR_LINE_NUMBER_COLUMN_BG = 0xffe0e0e0;
@@ -67,7 +67,7 @@ public class EditorSourceText extends EditText {
 
     private int textChangedInternally;
 
-    public EditorSourceText(Context context) {
+    public EditorText(Context context) {
         super(context);
 
         // Set default attrs
@@ -77,27 +77,27 @@ public class EditorSourceText extends EditText {
         initialize();
     }
 
-    public EditorSourceText(Context context, AttributeSet attrs) {
+    public EditorText(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         // Set default attrs
         setDefaultAttrs();
 
         // Get styled attributes array
-        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.EditorSourceText, 0, 0);
+        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.EditorText, 0, 0);
 
         /* Read XML attrs */
 
-        colorLineHighlight = styledAttrs.getColor(R.styleable.EditorSourceText_colorLineHighlight, colorLineHighlight);
-        colorLineNumberColumnBg = styledAttrs.getColor(R.styleable.EditorSourceText_colorLineNumberColumnBg, colorLineNumberColumnBg);
+        colorLineHighlight = styledAttrs.getColor(R.styleable.EditorText_colorLineHighlight, colorLineHighlight);
+        colorLineNumberColumnBg = styledAttrs.getColor(R.styleable.EditorText_colorLineNumberColumnBg, colorLineNumberColumnBg);
 
-        showLineHighlight = styledAttrs.getBoolean(R.styleable.EditorSourceText_showLineHighlight, showLineHighlight);
-        showLineNumbers = styledAttrs.getBoolean(R.styleable.EditorSourceText_showLineNumbers, showLineNumbers);
+        showLineHighlight = styledAttrs.getBoolean(R.styleable.EditorText_showLineHighlight, showLineHighlight);
+        showLineNumbers = styledAttrs.getBoolean(R.styleable.EditorText_showLineNumbers, showLineNumbers);
 
-        lineNumberColumnPaddingLeft = styledAttrs.getDimension(R.styleable.EditorSourceText_lineNumberColumnPaddingLeft, lineNumberColumnPaddingLeft);
-        lineNumberColumnPaddingRight = styledAttrs.getDimension(R.styleable.EditorSourceText_lineNumberColumnPaddingLeft, lineNumberColumnPaddingRight);
+        lineNumberColumnPaddingLeft = styledAttrs.getDimension(R.styleable.EditorText_lineNumberColumnPaddingLeft, lineNumberColumnPaddingLeft);
+        lineNumberColumnPaddingRight = styledAttrs.getDimension(R.styleable.EditorText_lineNumberColumnPaddingLeft, lineNumberColumnPaddingRight);
 
-        enableSyntaxHighlighting = styledAttrs.getBoolean(R.styleable.EditorSourceText_enableSyntaxHighlighting, enableSyntaxHighlighting);
+        enableSyntaxHighlighting = styledAttrs.getBoolean(R.styleable.EditorText_enableSyntaxHighlighting, enableSyntaxHighlighting);
 
         // Recycle styled attributes array
         styledAttrs.recycle();
