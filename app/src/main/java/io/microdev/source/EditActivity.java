@@ -19,17 +19,15 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
+import com.gmail.tylerfilla.android.widget.editor.Editor;
+
 import java.io.File;
 
-import io.microdev.source.core.EditContext;
 import io.microdev.source.util.Receiver;
-import io.microdev.source.widget.editor.Editor;
 
 public class EditActivity extends AppCompatActivity {
 
     private File file;
-    private EditContext editContext;
-
     private Editor editor;
 
     @Override
@@ -39,17 +37,14 @@ public class EditActivity extends AppCompatActivity {
         // Check if a file URI was passed
         if (getIntent().getData() != null) {
             // Get file for URI
-            file = new File(getIntent().getData().getPath());
-
-            // Set edit context to FILE (edits are tied to a file)
-            editContext = EditContext.FILE;
-        } else {
-            // Set edit context to FREE (edits are not tied to a file)
-            editContext = EditContext.FREE;
+            file = new File(getIntent().getDataString());
         }
 
-        // Show layout
+        // Inflate layout
         setContentView(R.layout.activity_edit);
+
+        // Get editor view
+        editor = (Editor) findViewById(R.id.activityEditEditor);
 
         // Set action bar to custom toolbar
         setSupportActionBar((Toolbar) findViewById(R.id.activityEditToolbar));
@@ -57,25 +52,26 @@ public class EditActivity extends AppCompatActivity {
         // Enable action bar up arrow to behave as home button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Decide action bar title based on edit context
-        if (editContext == EditContext.FILE) {
-            // Set title to filename
+        // Decide action bar title based on file presence
+        if (file == null) {
+            // Default title
+            getSupportActionBar().setTitle(getString(R.string._default_document_name));
+        } else {
+            // Set title to file name
             getSupportActionBar().setTitle(file.getName());
-        } else if (editContext == EditContext.FREE) {
-            // Clear title
-            getSupportActionBar().setTitle("");
         }
 
-        // Handle task description on supported versions
+        // Handle task descriptions on Lollipop+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Get app icon
-            Bitmap icon = BitmapFactory.decodeResource(getResources(), android.R.drawable.sym_def_app_icon);
+            // Resolve app icon
+            Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
 
             // Resolve primary color
             int colorPrimary;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                colorPrimary = getColor(R.color.colorPrimary);
+                colorPrimary = getResources().getColor(R.color.colorPrimary, getTheme());
             } else {
+                //noinspection deprecation
                 colorPrimary = getResources().getColor(R.color.colorPrimary);
             }
 
@@ -85,18 +81,8 @@ public class EditActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        // Get references to layout stuff
-        editor = (Editor) findViewById(R.id.activityEditEditor);
-
-        editor.getSyntaxHighlighter().addRule(new Editor.SyntaxHighlighter.RegexRule());
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate menu
+        // Inflate action bar menu
         getMenuInflater().inflate(R.menu.activity_edit, menu);
 
         return super.onCreateOptionsMenu(menu);
@@ -124,14 +110,6 @@ public class EditActivity extends AppCompatActivity {
         case R.id.menuActivityEditMoreOptions:
             // Menu button pressed
             // TODO: Show options popup menu
-            displayDialogRename(new Receiver<String>() {
-
-                @Override
-                public void put(String obj) {
-                    System.out.println("received: " + obj);
-                }
-
-            });
             return true;
         default:
             // Delegate to super if not handled
@@ -153,20 +131,15 @@ public class EditActivity extends AppCompatActivity {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        // Set title and message from XML
+        // Set title from XML
         builder.setTitle(R.string.dialog_activity_edit_rename_title);
 
         // Content layout for name input
         FrameLayout contentLayout = new FrameLayout(this);
 
-        // Get old or default file name
-        String oldName = file == null ? getString(R.string._default_document_name) : file.getName();
-
         // Create a text input for name entry
         final EditText editTextName = new EditText(this);
-        editTextName.setHint(oldName);
-        editTextName.setText(oldName);
-        editTextName.setSingleLine();
+        editTextName.setText(file == null ? getString(R.string._default_document_name) : file.getName());
         editTextName.selectAll();
 
         // Set margins for name input
@@ -179,7 +152,7 @@ public class EditActivity extends AppCompatActivity {
         // Add name input to content layout
         contentLayout.addView(editTextName);
 
-        // Add input to dialog
+        // Add name input to dialog
         builder.setView(contentLayout);
 
         // Set up cancel button
@@ -199,10 +172,10 @@ public class EditActivity extends AppCompatActivity {
         // Build and show the dialog
         final AlertDialog dialog = builder.show();
 
-        // Show the keyboard during the dialog interaction
+        // Show the soft keyboard
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
-        // Watch for text changes in name input
+        // Watch for text changes in name input box
         editTextName.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -211,7 +184,7 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Disable OK button if no name is provided
+                // Disable OK button if name box is empty
                 if (s.length() > 0) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
