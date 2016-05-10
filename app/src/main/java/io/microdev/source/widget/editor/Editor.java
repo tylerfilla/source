@@ -22,17 +22,11 @@ import android.view.ViewTreeObserver;
 import android.widget.EditText;
 
 import java.util.Deque;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.regex.Pattern;
 
 import io.microdev.source.R;
-import io.microdev.source.core.lang.Language;
-import io.microdev.source.util.Range;
 
 public class Editor extends EditText {
 
@@ -72,8 +66,6 @@ public class Editor extends EditText {
     private SyntaxHighlighter syntaxHighlighter;
 
     private int textChangedInternally;
-
-    private Map<Range<Integer>, Language> languageMap;
 
     public Editor(Context context) {
         super(context);
@@ -187,9 +179,6 @@ public class Editor extends EditText {
         // Establish undo baseline
         undoProvider.reset();
 
-        // Create a new syntax highlighter
-        syntaxHighlighter = new SyntaxHighlighter();
-
         // Give line numbering a little nudge
         lineCountCurrent = 0;
         lineCountPrev = -1;
@@ -260,12 +249,8 @@ public class Editor extends EditText {
         this.enableSyntaxHighlighting = enableSyntaxHighlighting;
     }
 
-    public void setLanguage(Language language, Range<Integer> range) {
-        languageMap.put(range, language);
-    }
-
     public void undo() {
-        undoProvider.undo();
+        undoProvider.undo(1);
     }
 
     public void undo(int count) {
@@ -273,7 +258,7 @@ public class Editor extends EditText {
     }
 
     public void redo() {
-        undoProvider.redo();
+        undoProvider.redo(1);
     }
 
     public void redo(int count) {
@@ -282,6 +267,10 @@ public class Editor extends EditText {
 
     public SyntaxHighlighter getSyntaxHighlighter() {
         return syntaxHighlighter;
+    }
+
+    public void setSyntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
+        this.syntaxHighlighter = syntaxHighlighter;
     }
 
     private void updateLineNumberColumnWidth() {
@@ -475,8 +464,8 @@ public class Editor extends EditText {
 
     public class UndoProvider {
 
-        private static final long CHECK_PERIOD = 100L;
-        private static final long STORE_THRESHOLD = 500L;
+        private static final long CHECK_PERIOD = 100l;
+        private static final long STORE_THRESHOLD = 500l;
 
         private Timer timer;
 
@@ -526,11 +515,6 @@ public class Editor extends EditText {
             return !stackRedo.isEmpty();
         }
 
-        private void undo() {
-            // Perform a single undo
-            undo(1);
-        }
-
         private void undo(int count) {
             // If current bump series hasn't yet been stored
             if (!stored) {
@@ -551,11 +535,6 @@ public class Editor extends EditText {
                 // Change state to reflect new topmost frame on undo stack
                 applyContentFrame(stackUndo.peek());
             }
-        }
-
-        private void redo() {
-            // Perform a single redo
-            redo(1);
         }
 
         private void redo(int count) {
@@ -746,78 +725,9 @@ public class Editor extends EditText {
 
     }
 
-    public static class SyntaxHighlighter {
+    public interface SyntaxHighlighter {
 
-        private Set<Rule> ruleSet;
-
-        private SyntaxHighlighter() {
-            ruleSet = new HashSet<>();
-        }
-
-        public void addRule(Rule rule) {
-            ruleSet.add(rule);
-        }
-
-        public void removeRule(Rule rule) {
-            ruleSet.remove(rule);
-        }
-
-        public void highlight() {
-            // Iterate over rules
-            for (Rule rule : ruleSet) {
-                // Apply rule
-                rule.apply(new Rule.Action() {
-
-                    @Override
-                    public void act(Data data) {
-                        // TODO: Act on action data
-                    }
-
-                });
-            }
-        }
-
-        public interface Rule {
-
-            void apply(Action action);
-
-            interface Action {
-
-                void act(Data data);
-
-                interface Data {
-                }
-
-            }
-
-        }
-
-        public static class RegexRule implements Rule {
-
-            private Pattern pattern;
-
-            public RegexRule() {
-                pattern = null;
-            }
-
-            public RegexRule(Pattern pattern) {
-                this.pattern = pattern;
-            }
-
-            public Pattern getPattern() {
-                return pattern;
-            }
-
-            public void setPattern(Pattern pattern) {
-                this.pattern = pattern;
-            }
-
-            @Override
-            public void apply(Action action) {
-                // TODO: Generate and pass highlighting data to action
-            }
-
-        }
+        Spanned highlight(CharSequence input);
 
     }
 
