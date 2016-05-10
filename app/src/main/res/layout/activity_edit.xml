@@ -15,7 +15,7 @@
         android:id="@+id/activityEditPanInterface"
         style="@style/Activity.Edit.PanInterface">
 
-        <io.microdev.source.widget.editor.Editor
+        <com.gmail.tylerfilla.android.widget.editorsourcetext.EditorSourceText
             android:id="@+id/activityEditEditor"
             style="@style/Activity.Edit.Editor" />
 
