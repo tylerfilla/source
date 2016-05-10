@@ -1,4 +1,4 @@
-package com.gmail.tylerfilla.android.widget.editorsourcetext;
+package io.microdev.source.widget.editorsourcetext;
 
 import android.content.Context;
 import android.content.res.TypedArray;

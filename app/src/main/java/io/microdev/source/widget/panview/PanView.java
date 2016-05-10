@@ -1,4 +1,4 @@
-package com.gmail.tylerfilla.android.widget.panview;
+package io.microdev.source.widget.panview;
 
 import android.annotation.TargetApi;
 import android.content.Context;

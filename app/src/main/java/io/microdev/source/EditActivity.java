@@ -23,7 +23,7 @@ import com.gmail.tylerfilla.android.widget.editorsourcetext.EditorSourceText;
 
 import java.io.File;
 
-import io.microdev.source.util.Receiver;
+import io.microdev.source.util.Callback;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -110,6 +110,13 @@ public class EditActivity extends AppCompatActivity {
         case R.id.menuActivityEditMoreOptions:
             // Menu button pressed
             // TODO: Show options popup menu
+            displayDialogRename(new Callback<String>() {
+
+                @Override
+                public void ring(String obj) {
+                }
+
+            });
             return true;
         default:
             // Delegate to super if not handled
@@ -127,7 +134,7 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
-    private void displayDialogRename(final Receiver<String> receiver) {
+    private void displayDialogRename(final Callback<String> callback) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -163,8 +170,8 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                // Pass new name to receiver
-                receiver.put(editTextName.getText().toString());
+                // Send new name to caller
+                callback.ring(editTextName.getText().toString());
             }
 
         });
