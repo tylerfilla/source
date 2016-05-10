@@ -37,16 +37,7 @@ public class PanView extends FrameLayout {
         super(context, attrs);
 
         initialize();
-
-        // Get styled attributes array
-        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PanView, 0, 0);
-
-        fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, false);
-        fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, false);
-
-        // Recycle styled attributes array
-        styledAttrs.recycle();
-
+        handleAttrs(attrs, 0, 0);
         configure();
     }
 
@@ -55,16 +46,7 @@ public class PanView extends FrameLayout {
         super(context, attrs, defStyleAttr, defStyleRes);
 
         initialize();
-
-        // Get styled attributes array
-        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.PanView, defStyleAttr, defStyleRes);
-
-        fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, false);
-        fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, false);
-
-        // Recycle styled attributes array
-        styledAttrs.recycle();
-
+        handleAttrs(attrs, defStyleAttr, defStyleRes);
         configure();
     }
 
@@ -140,6 +122,17 @@ public class PanView extends FrameLayout {
 
         fillViewportHeight = false;
         fillViewportWidth = false;
+    }
+
+    private void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        // Get styled attributes array
+        TypedArray styledAttrs = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.PanView, defStyleAttr, defStyleRes);
+
+        fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, false);
+        fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, false);
+
+        // Recycle styled attributes array
+        styledAttrs.recycle();
     }
 
     private void configure() {

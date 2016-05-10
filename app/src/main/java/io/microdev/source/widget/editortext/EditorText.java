@@ -1,5 +1,6 @@
 package io.microdev.source.widget.editortext;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -70,23 +71,43 @@ public class EditorText extends EditText {
     public EditorText(Context context) {
         super(context);
 
-        // Set default attrs
-        setDefaultAttrs();
-
-        // Common initializer
         initialize();
+        configure();
     }
 
     public EditorText(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        // Set default attrs
-        setDefaultAttrs();
+        initialize();
+        handleAttrs(attrs, 0, 0);
+        configure();
+    }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public EditorText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs);
+
+        initialize();
+        handleAttrs(attrs, defStyleAttr, defStyleRes);
+        configure();
+    }
+
+    private void initialize() {
+        colorLineHighlight = DEF_COLOR_LINE_HIGHLIGHT;
+        colorLineNumberColumnBg = DEF_COLOR_LINE_NUMBER_COLUMN_BG;
+
+        showLineHighlight = DEF_SHOW_LINE_HIGHLIGHT;
+        showLineNumbers = DEF_SHOW_LINE_NUMBERS;
+
+        lineNumberColumnPaddingLeft = DEF_LINE_NUMBER_COLUMN_PADDING_LEFT;
+        lineNumberColumnPaddingRight = DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT;
+
+        enableSyntaxHighlighting = true;
+    }
+
+    private void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         // Get styled attributes array
-        TypedArray styledAttrs = context.getTheme().obtainStyledAttributes(attrs, R.styleable.EditorText, 0, 0);
-
-        /* Read XML attrs */
+        TypedArray styledAttrs = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.EditorText, defStyleAttr, defStyleRes);
 
         colorLineHighlight = styledAttrs.getColor(R.styleable.EditorText_colorLineHighlight, colorLineHighlight);
         colorLineNumberColumnBg = styledAttrs.getColor(R.styleable.EditorText_colorLineNumberColumnBg, colorLineNumberColumnBg);
@@ -101,12 +122,9 @@ public class EditorText extends EditText {
 
         // Recycle styled attributes array
         styledAttrs.recycle();
-
-        // Common initializer
-        initialize();
     }
 
-    private void initialize() {
+    private void configure() {
         // Remove default underline and decor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             setBackground(null);
@@ -182,23 +200,6 @@ public class EditorText extends EditText {
         // Give line numbering a little nudge
         lineCountCurrent = 0;
         lineCountPrev = -1;
-    }
-
-    private void setDefaultAttrs() {
-        // Colors
-        colorLineHighlight = DEF_COLOR_LINE_HIGHLIGHT;
-        colorLineNumberColumnBg = DEF_COLOR_LINE_NUMBER_COLUMN_BG;
-
-        // Show flags
-        showLineHighlight = DEF_SHOW_LINE_HIGHLIGHT;
-        showLineNumbers = DEF_SHOW_LINE_NUMBERS;
-
-        // Line number column padding
-        lineNumberColumnPaddingLeft = DEF_LINE_NUMBER_COLUMN_PADDING_LEFT;
-        lineNumberColumnPaddingRight = DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT;
-
-        // Enable syntax highlighting
-        enableSyntaxHighlighting = true;
     }
 
     public boolean getShowLineHighlight() {
