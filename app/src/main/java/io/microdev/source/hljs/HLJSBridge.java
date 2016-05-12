@@ -5,7 +5,6 @@ import android.content.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.ast.ObjectLiteral;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,7 +17,8 @@ public class HLJSBridge {
 
     private Context context;
 
-    private org.mozilla.javascript.Context jsContext;
+    private org.mozilla.javascript.Context js;
+    private ScriptableObject jsScope;
 
     public HLJSBridge(Context context) {
         this.context = context;
@@ -26,47 +26,43 @@ public class HLJSBridge {
 
     public void load() throws IOException {
         // Enter new JavaScript execution context
-        jsContext = org.mozilla.javascript.Context.enter();
+        js = org.mozilla.javascript.Context.enter();
 
         // Use interpretive mode (bytecode compilation is out of the question on Android)
-        jsContext.setOptimizationLevel(-1);
+        js.setOptimizationLevel(-1);
 
-        // Establish scope
-        ScriptableObject scope = jsContext.initStandardObjects();
+        // Create global scope
+        jsScope = js.initStandardObjects();
 
-        // Create a global object for highlight.js to bind to
-        scope.defineProperty("window", jsContext.newObject(scope), ScriptableObject.DONTENUM);
+        // Create a global object for highlight.js to bind to (pretending to be a Web browser)
+        jsScope.defineProperty("window", js.newObject(jsScope), ScriptableObject.DONTENUM);
 
         // Create a reader for highlight.js core script
         InputStreamReader readerCore = new InputStreamReader(context.getAssets().open(ASSET_HLJS_SCRIPT_CORE));
 
         // Evaluate core script
-        jsContext.evaluateReader(scope, readerCore, "<hljscore>", 1, null);
+        js.evaluateReader(jsScope, readerCore, "<hljscore>", 1, null);
 
         // Close core script
         readerCore.close();
 
-        // Iterate over highlight.js language definition scripts
+        // Iterate over highlight.js language definition scripts and register them
         for (String langFileName : context.getAssets().list(ASSET_HLJS_DIR_LANGS)) {
             // Create a reader for this language script
             InputStreamReader readerLang = new InputStreamReader(context.getAssets().open(ASSET_HLJS_DIR_LANGS + "/" + langFileName));
 
             // Evaluate language script to obtain its language function
-            Function langFunc = (Function) jsContext.evaluateReader(scope, readerLang, "<hljslang>", 1, null);
+            Function langFunc = (Function) js.evaluateReader(jsScope, readerLang, "<hljslang>", 1, null);
 
             // Close language script
             readerLang.close();
 
             // Add previously obtained language function to scope under the name "lang"
-            scope.defineProperty("lang", langFunc, ScriptableObject.DONTENUM);
+            jsScope.defineProperty("lang", langFunc, ScriptableObject.DONTENUM);
 
             // Register the language function with highlight.js
-            jsContext.evaluateString(scope, "window.hljs.registerLanguage('" + langFileName.replaceAll("\\'", "\\\\'") + "', lang);", "<hljsreg>", 1, null);
+            ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("registerLanguage")).call(js, jsScope, jsScope, new Object[] { langFileName, langFunc });
         }
-
-        // FIXME: TESTING
-        jsContext.evaluateString(scope, "window.res = window.hljs.highlightAuto('var test = function() {\\n\\teval(\"\");\\n};');", "<cmd>", 1, null);
-        System.out.println(jsContext.evaluateString(scope, "window.res.value", "<cmd>", 1, null));
     }
 
     public void unload() {
