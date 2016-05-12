@@ -244,7 +244,7 @@ public class EditActivity extends AppCompatActivity {
 
     private class HLJSSyntaxHighlighter implements EditorText.SyntaxHighlighter {
 
-        private final Pattern spanPattern = Pattern.compile("<span class=\"hljs-(.+?)\">(.+?)<\\/span>");
+        private final Pattern spanPattern = Pattern.compile("<span class=\"hljs-(.+?)\">(.*?)<\\/span>", Pattern.DOTALL);
 
         private HLJSBridge hljsBridge;
 
@@ -267,11 +267,8 @@ public class EditActivity extends AppCompatActivity {
             // Send code to highlight.js for highlighting (FIXME: not always JS)
             String resultHtml = hljsBridge.highlight("JavaScript", source.toString());
 
-            System.out.println(source);
-            System.out.println(resultHtml);
-
-            // Accumulating offset for aligning spans to original text based on HTML
-            int offset = 0;
+            // Accumulating tag character offset for aligning spans to original text based on HTML
+            int tagOffset = 0;
 
             // Scan the HTML that highlight.js gave us for highlighting data
             Matcher htmlMatcher = spanPattern.matcher(resultHtml);
@@ -289,15 +286,17 @@ public class EditActivity extends AppCompatActivity {
                 int textEndHtml = htmlMatcher.end(2);
 
                 // Corresponding boundaries of text in editor
-                final int textStartEditor = tagStart;
+                final int textStartEditor = tagStart - tagOffset;
                 final int textEndEditor = textStartEditor + text.length();
 
-                System.out.println(tagStart + " " + tagEnd + " " + textStartHtml + " " + textEndHtml + " " + textStartEditor + " " + textEndEditor);
+                // Account for dead space
+                tagOffset += tagEnd - tagStart - text.length();
 
                 runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
+                        // FIXME: Apply a test span
                         source.setSpan(new StyleSpan(Typeface.ITALIC), textStartEditor, textEndEditor, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                     }
 
