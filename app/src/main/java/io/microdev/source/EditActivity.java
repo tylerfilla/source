@@ -241,6 +241,10 @@ public class EditActivity extends AppCompatActivity {
 
         private HLJSBridge hljsBridge;
 
+        public HLJSSyntaxHighlighter() {
+            hljsBridge = new HLJSBridge(EditActivity.this);
+        }
+
         @Override
         public void highlight(Editable str) {
             // Ensure highlight.js is loaded
@@ -253,7 +257,8 @@ public class EditActivity extends AppCompatActivity {
                 }
             }
 
-            // TODO: Highlighting stuff
+            // FIXME
+            System.out.println(hljsBridge.highlight("JavaScript", str.toString()));
         }
 
         public void unload() {

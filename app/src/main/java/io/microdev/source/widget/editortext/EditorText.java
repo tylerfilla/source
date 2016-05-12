@@ -64,7 +64,9 @@ public class EditorText extends EditText {
     private float lineNumberColumnWidth;
 
     private UndoProvider undoProvider;
+
     private SyntaxHighlighter syntaxHighlighter;
+    private SyntaxHighlightingUpdateThread syntaxHighlightingUpdateThread;
 
     private int textChangedInternally;
 
@@ -102,7 +104,7 @@ public class EditorText extends EditText {
         lineNumberColumnPaddingLeft = DEF_LINE_NUMBER_COLUMN_PADDING_LEFT;
         lineNumberColumnPaddingRight = DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT;
 
-        enableSyntaxHighlighting = true;
+        enableSyntaxHighlighting = DEF_ENABLE_SYNTAX_HIGHLIGHTING;
     }
 
     private void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -187,6 +189,8 @@ public class EditorText extends EditText {
 
             @Override
             public void afterTextChanged(Editable s) {
+                // Bump the syntax highlighting update thread
+                syntaxHighlightingUpdateThread.bump();
             }
 
         });
@@ -196,6 +200,10 @@ public class EditorText extends EditText {
 
         // Establish undo baseline
         undoProvider.reset();
+
+        // Create a and start syntax highlighting update thread
+        syntaxHighlightingUpdateThread = new SyntaxHighlightingUpdateThread();
+        syntaxHighlightingUpdateThread.start();
 
         // Give line numbering a little nudge
         lineCountCurrent = 0;
@@ -490,7 +498,7 @@ public class EditorText extends EditText {
 
                 @Override
                 public void run() {
-                    // If this bump series hasn't been stored and it's been long enough
+                    // If this bump series hasn't been highlighted and it's been long enough
                     if (!stored && System.nanoTime() - timeLastBumped > STORE_THRESHOLD * 1000000) {
                         // Store the bump series
                         storeUndo();
@@ -517,7 +525,7 @@ public class EditorText extends EditText {
         }
 
         private void undo(int count) {
-            // If current bump series hasn't yet been stored
+            // If current bump series hasn't yet been highlighted
             if (!stored) {
                 // Short-circuit the bump series (a bit hacky, but it works)
                 storeUndo();
@@ -575,7 +583,7 @@ public class EditorText extends EditText {
         }
 
         private void storeUndo() {
-            // Mark that content was stored for this bump series
+            // Mark that content was highlighted for this bump series
             stored = true;
 
             // Push current content onto undo stack for future undoing
@@ -729,6 +737,64 @@ public class EditorText extends EditText {
     public interface SyntaxHighlighter {
 
         void highlight(Editable str);
+
+    }
+
+    private class SyntaxHighlightingUpdateThread extends Thread {
+
+        private static final long CHECK_PERIOD = 500l;
+        private static final long HIGHLIGHT_THRESHOLD = 1000l;
+
+        private Timer timer;
+
+        private boolean highlighted;
+        private long timeLastBumped;
+
+        private volatile boolean shouldStop;
+
+        private SyntaxHighlightingUpdateThread() {
+            timer = new Timer();
+
+            highlighted = true;
+            timeLastBumped = System.nanoTime();
+
+            shouldStop = false;
+        }
+
+        @Override
+        public void run() {
+            while (!shouldStop) {
+                // If syntax highlighting is enabled
+                if (enableSyntaxHighlighting && syntaxHighlighter != null) {
+                    // If this bump series hasn't been highlighted and it's been long enough
+                    if (!highlighted && System.nanoTime() - timeLastBumped > HIGHLIGHT_THRESHOLD * 1000000) {
+                        // Run syntax highlighting
+                        syntaxHighlighter.highlight(getText());
+
+                        // Set highlighted flag
+                        highlighted = true;
+                    }
+                }
+
+                try {
+                    Thread.sleep(CHECK_PERIOD);
+                } catch (InterruptedException e) {
+                    shouldStop = true;
+                }
+            }
+        }
+
+        public void setShouldStop(boolean shouldStop) {
+            this.shouldStop = shouldStop;
+        }
+
+        public void bump() {
+            // Reset for next highlight
+            highlighted = false;
+
+            // Mark time of bump
+            timeLastBumped = System.nanoTime();
+        }
 
     }
 

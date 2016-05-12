@@ -53,6 +53,11 @@ public class HLJSBridge {
 
         // Iterate over highlight.js language definition scripts and register them
         for (String langFileName : context.getAssets().list(ASSET_HLJS_DIR_LANGS)) {
+            // If file doesn't have JavaScript extension, skip it
+            if (!langFileName.endsWith(".js")) {
+                continue;
+            }
+
             // Create a reader for this language script
             InputStreamReader readerLang = new InputStreamReader(context.getAssets().open(ASSET_HLJS_DIR_LANGS + "/" + langFileName));
 
@@ -66,7 +71,7 @@ public class HLJSBridge {
             jsScope.defineProperty("lang", langFunc, ScriptableObject.DONTENUM);
 
             // Register the language function with highlight.js
-            ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("registerLanguage")).call(js, jsScope, jsScope, new Object[]{langFileName, langFunc});
+            ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("registerLanguage")).call(js, jsScope, jsScope, new Object[] { langFileName.substring(0, langFileName.length() - 3), langFunc });
         }
 
         // Set loaded flag
@@ -78,6 +83,14 @@ public class HLJSBridge {
 
         // Clear loaded flag
         loaded = false;
+    }
+
+    public String highlight(String lang, String code) {
+        // Send the code off to highlight.js
+        ScriptableObject obj = (ScriptableObject) ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("highlight")).call(js, jsScope, jsScope, new Object[] { lang, code, true, null });
+
+        // Obtain and return the highlighted result
+        return String.valueOf(obj.get("value"));
     }
 
 }
