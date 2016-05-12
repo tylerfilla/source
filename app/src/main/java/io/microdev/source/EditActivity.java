@@ -79,6 +79,17 @@ public class EditActivity extends AppCompatActivity {
             // Set task description
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
         }
+
+        // Set editor syntax highlighter
+        editor.setSyntaxHighlighter(new HLJSSyntaxHighlighter());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Unload editor syntax highlighter
+        ((HLJSSyntaxHighlighter) editor.getSyntaxHighlighter()).unload();
     }
 
     @Override
@@ -224,6 +235,32 @@ public class EditActivity extends AppCompatActivity {
 
         // Initially disable the OK button
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+    }
+
+    private class HLJSSyntaxHighlighter implements EditorText.SyntaxHighlighter {
+
+        private HLJSBridge hljsBridge;
+
+        @Override
+        public void highlight(Editable str) {
+            // Ensure highlight.js is loaded
+            if (!hljsBridge.isLoaded()) {
+                try {
+                    hljsBridge.load();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+
+            // TODO: Highlighting stuff
+        }
+
+        public void unload() {
+            // Unload highlight.js
+            hljsBridge.unload();
+        }
+
     }
 
 }

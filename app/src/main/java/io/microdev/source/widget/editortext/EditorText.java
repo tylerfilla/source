@@ -728,7 +728,7 @@ public class EditorText extends EditText {
 
     public interface SyntaxHighlighter {
 
-        Spanned highlight(CharSequence input);
+        void highlight(Editable str);
 
     }
 

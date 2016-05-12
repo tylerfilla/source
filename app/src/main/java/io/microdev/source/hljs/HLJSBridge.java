@@ -3,7 +3,6 @@ package io.microdev.source.hljs;
 import android.content.Context;
 
 import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 import java.io.IOException;
@@ -17,11 +16,17 @@ public class HLJSBridge {
 
     private Context context;
 
+    private boolean loaded;
+
     private org.mozilla.javascript.Context js;
     private ScriptableObject jsScope;
 
     public HLJSBridge(Context context) {
         this.context = context;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
     }
 
     public void load() throws IOException {
@@ -61,12 +66,18 @@ public class HLJSBridge {
             jsScope.defineProperty("lang", langFunc, ScriptableObject.DONTENUM);
 
             // Register the language function with highlight.js
-            ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("registerLanguage")).call(js, jsScope, jsScope, new Object[] { langFileName, langFunc });
+            ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("registerLanguage")).call(js, jsScope, jsScope, new Object[]{langFileName, langFunc});
         }
+
+        // Set loaded flag
+        loaded = true;
     }
 
     public void unload() {
         org.mozilla.javascript.Context.exit();
+
+        // Clear loaded flag
+        loaded = false;
     }
 
 }
