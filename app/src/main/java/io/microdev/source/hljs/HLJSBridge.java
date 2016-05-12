@@ -5,10 +5,9 @@ import android.content.Context;
 import org.mozilla.javascript.Scriptable;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class HLJSBridge {
-
-    private static final String ASSET_HLJS_ARCHIVE = "highlightjs.zip";
 
     private Context context;
 
@@ -28,7 +27,9 @@ public class HLJSBridge {
         // Establish scope
         Scriptable scope = jsContext.initSafeStandardObjects();
 
-        System.out.println(jsContext.evaluateString(scope, "'hello'", "<cmd>", 1, null));
+        jsContext.evaluateReader(scope, new InputStreamReader(context.getAssets().open("highlight.js/src/highlight.js")), "<hljs>", 1, null);
+
+        System.out.println(jsContext.evaluateString(scope, "hljs", "<cmd>", 1, null));
     }
 
     public void unload() {
