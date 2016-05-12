@@ -238,7 +238,7 @@ public class EditActivity extends AppCompatActivity {
 
     private class HLJSSyntaxHighlighter implements EditorText.SyntaxHighlighter {
 
-        private final Pattern spanPattern = Pattern.compile("<span class=\"hljs-(.+?)\">(.*?)<\\/span>", Pattern.DOTALL);
+        private final Pattern spanPattern = Pattern.compile("<span class=\"(.+?)\">(.*?)<\\/span>", Pattern.DOTALL);
 
         private HLJSBridge hljsBridge;
 
@@ -272,7 +272,7 @@ public class EditActivity extends AppCompatActivity {
             Matcher htmlMatcher = spanPattern.matcher(resultHtml);
             while (htmlMatcher.find()) {
                 // Get groups
-                String type = htmlMatcher.group(1);
+                String typeClass = htmlMatcher.group(1);
                 String text = htmlMatcher.group(2);
 
                 // Boundaries of entire tag
@@ -290,17 +290,10 @@ public class EditActivity extends AppCompatActivity {
                 // Account for dead space
                 tagOffset += tagEnd - tagStart - text.length();
 
-                // TODO: Implement a theme system
-
                 // Span containing highlight formatting
                 SyntaxSpan span = null;
 
-                // Switch against type of highlight
-                switch (type) {
-                case "keyword":
-                    span = new SyntaxForegroundColorSpan(getResources().getColor(R.color.activity_edit_editor_syntax_fg_keyword), spanIteration);
-                    break;
-                }
+                // TODO: Convert type class to span based on a theme
 
                 // Make span final to access from UI thread
                 final SyntaxSpan spanFinal = span;
