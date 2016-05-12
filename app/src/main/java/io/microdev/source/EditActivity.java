@@ -20,7 +20,9 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 
 import java.io.File;
+import java.io.IOException;
 
+import io.microdev.source.hljs.HLJSBridge;
 import io.microdev.source.util.Callback;
 import io.microdev.source.widget.editortext.EditorText;
 
@@ -76,6 +78,12 @@ public class EditActivity extends AppCompatActivity {
 
             // Set task description
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
+        }
+
+        try {
+            new HLJSBridge(this).load();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
