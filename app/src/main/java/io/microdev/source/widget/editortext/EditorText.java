@@ -736,7 +736,7 @@ public class EditorText extends EditText {
 
     public interface SyntaxHighlighter {
 
-        void highlight(Editable str);
+        void highlight(Editable source);
 
     }
 

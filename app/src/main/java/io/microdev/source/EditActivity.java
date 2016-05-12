@@ -4,13 +4,16 @@ import android.app.ActivityManager;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +24,8 @@ import android.widget.FrameLayout;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.microdev.source.hljs.HLJSBridge;
 import io.microdev.source.util.Callback;
@@ -239,6 +244,8 @@ public class EditActivity extends AppCompatActivity {
 
     private class HLJSSyntaxHighlighter implements EditorText.SyntaxHighlighter {
 
+        private final Pattern spanPattern = Pattern.compile("<span class=\"hljs-(.+?)\">(.+?)<\\/span>");
+
         private HLJSBridge hljsBridge;
 
         public HLJSSyntaxHighlighter() {
@@ -246,7 +253,7 @@ public class EditActivity extends AppCompatActivity {
         }
 
         @Override
-        public void highlight(Editable str) {
+        public void highlight(final Editable source) {
             // Ensure highlight.js is loaded
             if (!hljsBridge.isLoaded()) {
                 try {
@@ -257,8 +264,45 @@ public class EditActivity extends AppCompatActivity {
                 }
             }
 
-            // FIXME
-            System.out.println(hljsBridge.highlight("JavaScript", str.toString()));
+            // Send code to highlight.js for highlighting (FIXME: not always JS)
+            String resultHtml = hljsBridge.highlight("JavaScript", source.toString());
+
+            System.out.println(source);
+            System.out.println(resultHtml);
+
+            // Accumulating offset for aligning spans to original text based on HTML
+            int offset = 0;
+
+            // Scan the HTML that highlight.js gave us for highlighting data
+            Matcher htmlMatcher = spanPattern.matcher(resultHtml);
+            while (htmlMatcher.find()) {
+                // Get groups
+                String type = htmlMatcher.group(1);
+                String text = htmlMatcher.group(2);
+
+                // Boundaries of entire tag
+                int tagStart = htmlMatcher.start();
+                int tagEnd = htmlMatcher.end();
+
+                // Boundaries of text in HTML
+                int textStartHtml = htmlMatcher.start(2);
+                int textEndHtml = htmlMatcher.end(2);
+
+                // Corresponding boundaries of text in editor
+                final int textStartEditor = tagStart;
+                final int textEndEditor = textStartEditor + text.length();
+
+                System.out.println(tagStart + " " + tagEnd + " " + textStartHtml + " " + textEndHtml + " " + textStartEditor + " " + textEndEditor);
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        source.setSpan(new StyleSpan(Typeface.ITALIC), textStartEditor, textEndEditor, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    }
+
+                });
+            }
         }
 
         public void unload() {
