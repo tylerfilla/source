@@ -79,12 +79,6 @@ public class EditActivity extends AppCompatActivity {
             // Set task description
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
         }
-
-        try {
-            new HLJSBridge(this).load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
