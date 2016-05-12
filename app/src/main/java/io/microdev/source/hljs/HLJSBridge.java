@@ -78,13 +78,6 @@ public class HLJSBridge {
         loaded = true;
     }
 
-    public void unload() {
-        org.mozilla.javascript.Context.exit();
-
-        // Clear loaded flag
-        loaded = false;
-    }
-
     public String highlight(String lang, String code) {
         // Send the code off to highlight.js
         ScriptableObject obj = (ScriptableObject) ((Function) ((ScriptableObject) ((ScriptableObject) jsScope.get("window")).get("hljs")).get("highlight")).call(js, jsScope, jsScope, new Object[] { lang, code, true, null });

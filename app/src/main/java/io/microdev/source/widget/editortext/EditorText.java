@@ -742,8 +742,8 @@ public class EditorText extends EditText {
 
     private class SyntaxHighlightingUpdateThread extends Thread {
 
-        private static final long CHECK_PERIOD = 500l;
-        private static final long HIGHLIGHT_THRESHOLD = 1000l;
+        private static final long CHECK_PERIOD = 100l;
+        private static final long HIGHLIGHT_THRESHOLD = 500l;
 
         private Timer timer;
 

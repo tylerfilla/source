@@ -4,7 +4,6 @@ import android.app.ActivityManager;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -13,7 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.text.style.TypefaceSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -87,14 +89,6 @@ public class EditActivity extends AppCompatActivity {
 
         // Set editor syntax highlighter
         editor.setSyntaxHighlighter(new HLJSSyntaxHighlighter());
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        // Unload editor syntax highlighter
-        ((HLJSSyntaxHighlighter) editor.getSyntaxHighlighter()).unload();
     }
 
     @Override
@@ -248,8 +242,12 @@ public class EditActivity extends AppCompatActivity {
 
         private HLJSBridge hljsBridge;
 
+        private int spanIteration;
+
         public HLJSSyntaxHighlighter() {
             hljsBridge = new HLJSBridge(EditActivity.this);
+
+            spanIteration = 0;
         }
 
         @Override
@@ -292,21 +290,127 @@ public class EditActivity extends AppCompatActivity {
                 // Account for dead space
                 tagOffset += tagEnd - tagStart - text.length();
 
-                runOnUiThread(new Runnable() {
+                // TODO: Implement a theme system
 
-                    @Override
-                    public void run() {
-                        // FIXME: Apply a test span
-                        source.setSpan(new StyleSpan(Typeface.ITALIC), textStartEditor, textEndEditor, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                // Span containing highlight formatting
+                SyntaxSpan span = null;
+
+                // Switch against type of highlight
+                switch (type) {
+                case "keyword":
+                    span = new SyntaxForegroundColorSpan(getResources().getColor(R.color.activity_edit_editor_syntax_fg_keyword), spanIteration);
+                    break;
+                }
+
+                // Make span final to access from UI thread
+                final SyntaxSpan spanFinal = span;
+
+                // If a span was created
+                if (span != null) {
+                    // Continue work on the UI thread
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            // Apply syntax highlighting span
+                            source.setSpan(spanFinal, textStartEditor, textEndEditor, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        }
+
+                    });
+                }
+            }
+
+            // Work on the UI thread
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Remove all syntax spans from past iterations
+                    for (SyntaxSpan span : source.getSpans(0, source.length(), SyntaxSpan.class)) {
+                        if (span.getIteration() < spanIteration) {
+                            source.removeSpan(span);
+                        }
                     }
 
-                });
-            }
+                    // Increment span iteration
+                    spanIteration++;
+                }
+
+            });
         }
 
-        public void unload() {
-            // Unload highlight.js
-            hljsBridge.unload();
+    }
+
+    private interface SyntaxSpan {
+
+        int getIteration();
+
+    }
+
+    private static class SyntaxStyleSpan extends StyleSpan implements SyntaxSpan {
+
+        private int iteration;
+
+        public SyntaxStyleSpan(int style, int iteration) {
+            super(style);
+
+            this.iteration = iteration;
+        }
+
+        @Override
+        public int getIteration() {
+            return iteration;
+        }
+
+    }
+
+    private static class SyntaxTypefaceSpan extends TypefaceSpan implements SyntaxSpan {
+
+        private int iteration;
+
+        public SyntaxTypefaceSpan(String family, int iteration) {
+            super(family);
+
+            this.iteration = iteration;
+        }
+
+        @Override
+        public int getIteration() {
+            return iteration;
+        }
+
+    }
+
+    private static class SyntaxBackgroundColorSpan extends BackgroundColorSpan implements SyntaxSpan {
+
+        private int iteration;
+
+        public SyntaxBackgroundColorSpan(int color, int iteration) {
+            super(color);
+
+            this.iteration = iteration;
+        }
+
+        @Override
+        public int getIteration() {
+            return iteration;
+        }
+
+    }
+
+    private static class SyntaxForegroundColorSpan extends ForegroundColorSpan implements SyntaxSpan {
+
+        private int iteration;
+
+        public SyntaxForegroundColorSpan(int color, int iteration) {
+            super(color);
+
+            this.iteration = iteration;
+        }
+
+        @Override
+        public int getIteration() {
+            return iteration;
         }
 
     }
