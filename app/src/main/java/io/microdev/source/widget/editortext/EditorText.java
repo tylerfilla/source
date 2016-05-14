@@ -328,7 +328,7 @@ public class EditorText extends EditText {
             int l = 1;
             for (int i = 0; i < getLineCount(); i++) {
                 // Determine if line should be numbered
-                if (i == 0 || getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) {
+                if (i == 0 || getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) { // FIXME: Undoing during draw pass causes problems
                     // Get Y coordinates of line's vertical bounds
                     float lineTop = layout.getLineTop(i) + getPaddingTop();
                     float lineBottom = layout.getLineBottom(i) + getPaddingTop();
@@ -745,16 +745,12 @@ public class EditorText extends EditText {
         private static final long CHECK_PERIOD = 100l;
         private static final long HIGHLIGHT_THRESHOLD = 500l;
 
-        private Timer timer;
-
         private boolean highlighted;
         private long timeLastBumped;
 
         private volatile boolean shouldStop;
 
         private SyntaxHighlightingUpdateThread() {
-            timer = new Timer();
-
             highlighted = true;
             timeLastBumped = System.nanoTime();
 
