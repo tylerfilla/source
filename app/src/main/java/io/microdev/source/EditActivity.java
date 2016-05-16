@@ -10,12 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
-import android.text.style.TypefaceSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,11 +20,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import io.microdev.source.hljs.HLJSBridge;
 import io.microdev.source.util.Callback;
 import io.microdev.source.widget.editortext.EditorText;
 
@@ -86,9 +77,6 @@ public class EditActivity extends AppCompatActivity {
             // Set task description
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
         }
-
-        // Set editor syntax highlighter
-        editor.setSyntaxHighlighter(new HLJSSyntaxHighlighter());
     }
 
     @Override
@@ -234,178 +222,6 @@ public class EditActivity extends AppCompatActivity {
 
         // Initially disable the OK button
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
-    }
-
-    private class HLJSSyntaxHighlighter implements EditorText.SyntaxHighlighter {
-
-        private final Pattern spanPattern = Pattern.compile("<span class=\"(.+?)\">(.*?)<\\/span>", Pattern.DOTALL);
-
-        private HLJSBridge hljsBridge;
-
-        private int spanIteration;
-
-        public HLJSSyntaxHighlighter() {
-            hljsBridge = new HLJSBridge(EditActivity.this);
-
-            spanIteration = 0;
-        }
-
-        @Override
-        public void highlight(final Editable source) {
-            // Ensure highlight.js is loaded
-            if (!hljsBridge.isLoaded()) {
-                try {
-                    hljsBridge.load();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
-            }
-
-            // Send code to highlight.js for highlighting (FIXME: not always JS)
-            String resultHtml = hljsBridge.highlight("JavaScript", source.toString());
-
-            // Accumulating tag character offset for aligning spans to original text based on HTML
-            int tagOffset = 0;
-
-            // Scan the HTML that highlight.js gave us for highlighting data
-            Matcher htmlMatcher = spanPattern.matcher(resultHtml);
-            while (htmlMatcher.find()) {
-                // Get groups
-                String typeClass = htmlMatcher.group(1);
-                String text = htmlMatcher.group(2);
-
-                // Boundaries of entire tag
-                int tagStart = htmlMatcher.start();
-                int tagEnd = htmlMatcher.end();
-
-                // Boundaries of text in HTML
-                int textStartHtml = htmlMatcher.start(2);
-                int textEndHtml = htmlMatcher.end(2);
-
-                // Corresponding boundaries of text in editor
-                final int textStartEditor = tagStart - tagOffset;
-                final int textEndEditor = textStartEditor + text.length();
-
-                // Account for dead space
-                tagOffset += tagEnd - tagStart - text.length();
-
-                // Span containing highlight formatting
-                SyntaxSpan span = null;
-
-                // TODO: Convert type class to span based on a theme
-
-                // Make span final to access from UI thread
-                final SyntaxSpan spanFinal = span;
-
-                // If a span was created
-                if (span != null) {
-                    // Continue work on the UI thread
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // Apply syntax highlighting span
-                            source.setSpan(spanFinal, textStartEditor, textEndEditor, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        }
-
-                    });
-                }
-            }
-
-            // Work on the UI thread
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    // Remove all syntax spans from past iterations
-                    for (SyntaxSpan span : source.getSpans(0, source.length(), SyntaxSpan.class)) {
-                        if (span.getIteration() < spanIteration) {
-                            source.removeSpan(span);
-                        }
-                    }
-
-                    // Increment span iteration
-                    spanIteration++;
-                }
-
-            });
-        }
-
-    }
-
-    private interface SyntaxSpan {
-
-        int getIteration();
-
-    }
-
-    private static class SyntaxStyleSpan extends StyleSpan implements SyntaxSpan {
-
-        private int iteration;
-
-        public SyntaxStyleSpan(int style, int iteration) {
-            super(style);
-
-            this.iteration = iteration;
-        }
-
-        @Override
-        public int getIteration() {
-            return iteration;
-        }
-
-    }
-
-    private static class SyntaxTypefaceSpan extends TypefaceSpan implements SyntaxSpan {
-
-        private int iteration;
-
-        public SyntaxTypefaceSpan(String family, int iteration) {
-            super(family);
-
-            this.iteration = iteration;
-        }
-
-        @Override
-        public int getIteration() {
-            return iteration;
-        }
-
-    }
-
-    private static class SyntaxBackgroundColorSpan extends BackgroundColorSpan implements SyntaxSpan {
-
-        private int iteration;
-
-        public SyntaxBackgroundColorSpan(int color, int iteration) {
-            super(color);
-
-            this.iteration = iteration;
-        }
-
-        @Override
-        public int getIteration() {
-            return iteration;
-        }
-
-    }
-
-    private static class SyntaxForegroundColorSpan extends ForegroundColorSpan implements SyntaxSpan {
-
-        private int iteration;
-
-        public SyntaxForegroundColorSpan(int color, int iteration) {
-            super(color);
-
-            this.iteration = iteration;
-        }
-
-        @Override
-        public int getIteration() {
-            return iteration;
-        }
-
     }
 
 }
