@@ -21,18 +21,6 @@
         <attr name="fillViewportHeight" format="boolean" />
         <attr name="fillViewportWidth" format="boolean" />
 
-        <attr name="scrollbarHorizontalEnabled" format="boolean" />
-        <attr name="scrollbarVerticalEnabled" format="boolean" />
-
-        <attr name="scrollbarHorizontalColor" format="color" />
-        <attr name="scrollbarVerticalColor" format="color" />
-
-        <attr name="scrollbarHorizontalSize" format="dimension" />
-        <attr name="scrollbarVerticalSize" format="dimension" />
-
-        <attr name="scrollbarHorizontalMargin" format="dimension" />
-        <attr name="scrollbarVerticalMargin" format="dimension" />
-
     </declare-styleable>
 
 </resources>
