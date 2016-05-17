@@ -430,53 +430,18 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void promptFindReplace() {
-        // Device to handle data once both search and replace data have been collected
-        final Callback<String[]> dataHandler = new Callback<String[]>() {
-
-            @Override
-            public void ring(String[] arg) {
-                System.out.println("Should find \"" + arg[0] + "\" and replace it with \"" + arg[1] + "\"");
-            }
-
-        };
-
-        // A place to store data
-        final String[] data = new String[2];
-
         // Display find and replace dialog
-        displayDialogFindReplace(new Callback<String>() {
+        displayDialogFindReplace(new Callback<DialogResultFindReplace>() {
 
             @Override
-            public void ring(String arg) {
-                // Store search data
-                data[0] = arg;
-
-                // If replace data has already been set
-                if (data[1] != null) {
-                    // Process data
-                    dataHandler.ring(data);
-                }
-            }
-
-        }, new Callback<String>() {
-
-            @Override
-            public void ring(String arg) {
-                // Store replace data
-                data[1] = arg;
-
-                // If search data has already been set
-                if (data[0] != null) {
-                    // Process data
-                    dataHandler.ring(data);
-                }
+            public void ring(DialogResultFindReplace arg) {
             }
 
         });
     }
 
     @SuppressWarnings("ResourceType")
-    private void displayDialogFindReplace(final Callback<String> search, final Callback<String> replace) {
+    private void displayDialogFindReplace(final Callback<DialogResultFindReplace> callback) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -527,42 +492,29 @@ public class EditActivity extends AppCompatActivity {
         inputEnableMatchCaseLayoutParams.addRule(RelativeLayout.BELOW, inputReplace.getId());
         inputEnableMatchCase.setLayoutParams(inputEnableMatchCaseLayoutParams);
 
-        // Checkbox input to enable word matching
-        final CheckBox inputEnableMatchWords = new CheckBox(this);
-        inputEnableMatchWords.setId(4);
-        inputEnableMatchWords.setText(R.string.dialog_activity_edit_find_input_enable_match_words_hint);
-        inputEnableMatchWords.setChecked(false);
-
-        // Set layout parameters for enable match words input
-        RelativeLayout.LayoutParams inputEnableMatchWordsLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEnableMatchWordsLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
-        inputEnableMatchWordsLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchCase.getId());
-        inputEnableMatchWords.setLayoutParams(inputEnableMatchWordsLayoutParams);
-
         // Checkbox input to enable replacement
         final CheckBox inputEnableReplace = new CheckBox(this);
-        inputEnableReplace.setId(5);
+        inputEnableReplace.setId(4);
         inputEnableReplace.setText(R.string.dialog_activity_edit_find_input_enable_replace_hint);
         inputEnableReplace.setChecked(false);
 
         // Set layout parameters for enable replace input
         RelativeLayout.LayoutParams inputEnableReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inputEnableReplaceLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
-        inputEnableReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchWords.getId());
+        inputEnableReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchCase.getId());
         inputEnableReplace.setLayoutParams(inputEnableReplaceLayoutParams);
 
         // Add stuff to content layout
         content.addView(inputSearch);
         content.addView(inputReplace);
         content.addView(inputEnableMatchCase);
-        content.addView(inputEnableMatchWords);
         content.addView(inputEnableReplace);
 
         // Add content to dialog
         builder.setView(content);
 
         // A place for all checkbox states
-        final boolean[] checkState = new boolean[3];
+        final boolean[] checkState = new boolean[2];
 
         // Set up cancel button
         builder.setNegativeButton(R.string.dialog_activity_edit_find_button_cancel_text, null);
@@ -572,14 +524,32 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                search.ring(inputSearch.getText().toString());
-                replace.ring(inputReplace.getText().toString());
+                // Create a package for result data
+                DialogResultFindReplace result = new DialogResultFindReplace();
+                result.setSearch(inputSearch.getText().toString());
+                result.setReplace(inputReplace.getText().toString());
+                result.setEnableMatchCase(checkState[0]);
+                result.setEnableReplace(checkState[1]);
+
+                // Send result to caller
+                callback.ring(result);
             }
 
         });
 
         // Build the dialog
         final AlertDialog dialog = builder.create();
+
+        // Listen for dialog show
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                // Show the soft keyboard
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(inputSearch, InputMethodManager.SHOW_IMPLICIT);
+            }
+
+        });
 
         // Listen for changes on enable match case input
         inputEnableMatchCase.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -592,24 +562,13 @@ public class EditActivity extends AppCompatActivity {
 
         });
 
-        // Listen for changes on enable match words input
-        inputEnableMatchWords.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                // Deposit enable match words state
-                checkState[1] = b;
-            }
-
-        });
-
         // Listen for changes on enable replace input
         inputEnableReplace.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 // Deposit enable replace state
-                checkState[2] = b;
+                checkState[1] = b;
 
                 // Show/hide replacement input based on enable replace state
                 if (b) {
@@ -634,7 +593,7 @@ public class EditActivity extends AppCompatActivity {
                     inputSearch.requestFocus();
                 }
 
-                if (inputSearch.length() > 0 && (!checkState[2] || inputReplace.length() > 0)) {
+                if (inputSearch.length() > 0 && (!checkState[1] || inputReplace.length() > 0)) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
@@ -652,7 +611,7 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0 && (!checkState[2] || inputReplace.length() > 0)) {
+                if (s.length() > 0 && (!checkState[1] || inputReplace.length() > 0)) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
@@ -692,6 +651,52 @@ public class EditActivity extends AppCompatActivity {
 
         // Initially disable the OK button
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+    }
+
+    private class DialogResultFindReplace {
+
+        private String search;
+        private String replace;
+        private boolean enableMatchCase;
+        private boolean enableReplace;
+
+        public DialogResultFindReplace() {
+            search = null;
+            replace = null;
+        }
+
+        public String getSearch() {
+            return search;
+        }
+
+        public void setSearch(String search) {
+            this.search = search;
+        }
+
+        public String getReplace() {
+            return replace;
+        }
+
+        public void setReplace(String replace) {
+            this.replace = replace;
+        }
+
+        public boolean isEnableMatchCase() {
+            return enableMatchCase;
+        }
+
+        public void setEnableMatchCase(boolean enableMatchCase) {
+            this.enableMatchCase = enableMatchCase;
+        }
+
+        public boolean isEnableReplace() {
+            return enableReplace;
+        }
+
+        public void setEnableReplace(boolean enableReplace) {
+            this.enableReplace = enableReplace;
+        }
+
     }
 
     private static class PopupMoreOptionsAdapter extends BaseAdapter {
