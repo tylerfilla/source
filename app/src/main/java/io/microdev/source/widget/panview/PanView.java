@@ -17,16 +17,9 @@ import io.microdev.source.R;
 public class PanView extends FrameLayout {
 
     private static final long SCROLL_CHANGE_EXPIRATION = 200000000l;
-    private static final long SCROLLBAR_FADE_DELAY = 100000000l;
 
     private static final boolean DEF_FILL_VIEWPORT_HEIGHT = false;
     private static final boolean DEF_FILL_VIEWPORT_WIDTH = false;
-
-    private static final boolean DEF_SCROLLBAR_HORIZONTAL_ENABLED = true;
-    private static final boolean DEF_SCROLLBAR_VERTICAL_ENABLED = true;
-
-    private static final int DEF_SCROLLBAR_HORIZONTAL_COLOR = 0x70000000;
-    private static final int DEF_SCROLLBAR_VERTICAL_COLOR = 0x70000000;
 
     private boolean fillViewportHeight;
     private boolean fillViewportWidth;
