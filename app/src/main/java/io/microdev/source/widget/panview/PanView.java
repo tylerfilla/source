@@ -17,11 +17,11 @@ public class PanView extends FrameLayout {
 
     private static final long SCROLL_CHANGE_EXPIRATION = 200000000l;
 
-    private HorizontalScrollView scrollH;
-    private ScrollView scrollV;
-
     private boolean fillViewportHeight;
     private boolean fillViewportWidth;
+
+    private HorizontalScrollView scrollH;
+    private ScrollView scrollV;
 
     private boolean isScrollingX;
     private boolean isScrollingY;
@@ -128,8 +128,8 @@ public class PanView extends FrameLayout {
         // Get styled attributes array
         TypedArray styledAttrs = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.PanView, defStyleAttr, defStyleRes);
 
-        fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, false);
-        fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, false);
+        fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, fillViewportHeight);
+        fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, fillViewportWidth);
 
         // Recycle styled attributes array
         styledAttrs.recycle();
@@ -143,6 +143,22 @@ public class PanView extends FrameLayout {
         // Fill viewport for each axis
         scrollH.setFillViewport(fillViewportWidth);
         scrollV.setFillViewport(fillViewportHeight);
+    }
+
+    public boolean getFillViewportWidth() {
+        return fillViewportWidth;
+    }
+
+    public void setFillViewportWidth(boolean fillViewportWidth) {
+        this.fillViewportWidth = fillViewportWidth;
+    }
+
+    public boolean getFillViewportHeight() {
+        return fillViewportHeight;
+    }
+
+    public void setFillViewportHeight(boolean fillViewportHeight) {
+        this.fillViewportHeight = fillViewportHeight;
     }
 
     @Override

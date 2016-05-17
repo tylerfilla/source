@@ -7,13 +7,13 @@
     tools:context="io.microdev.source.EditActivity">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/activityEditToolbar"
-        style="@style/Activity.Edit.Toolbar"
+        android:id="@+id/activityEditAppBar"
+        style="@style/Activity.Edit.AppBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <io.microdev.source.widget.panview.PanView
-        android:id="@+id/activityEditPanInterface"
-        style="@style/Activity.Edit.PanInterface">
+        android:id="@+id/activityEditPanView"
+        style="@style/Activity.Edit.PanView">
 
         <io.microdev.source.widget.editortext.EditorText
             android:id="@+id/activityEditEditor"

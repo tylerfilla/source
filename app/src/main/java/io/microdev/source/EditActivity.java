@@ -42,6 +42,7 @@ import java.util.List;
 import io.microdev.source.util.Callback;
 import io.microdev.source.util.DimenUtil;
 import io.microdev.source.widget.editortext.EditorText;
+import io.microdev.source.widget.panview.PanView;
 
 import static io.microdev.source.util.DimenUtil.dpToPx;
 
@@ -50,7 +51,8 @@ public class EditActivity extends AppCompatActivity {
     private File file;
     private String fileName;
 
-    private Toolbar appbar;
+    private Toolbar appBar;
+    private PanView panView;
     private EditorText editor;
 
     private ListPopupWindow popupMoreOptions;
@@ -78,14 +80,13 @@ public class EditActivity extends AppCompatActivity {
             fileName = getString(R.string._default_file_name);
         }
 
-        // Find editor view
+        // Find stuff
         editor = (EditorText) findViewById(R.id.activityEditEditor);
-
-        // Find app bar
-        appbar = (Toolbar) findViewById(R.id.activityEditToolbar);
+        panView = (PanView) findViewById(R.id.activityEditPanView);
+        appBar = (Toolbar) findViewById(R.id.activityEditAppBar);
 
         // Set action bar to custom app bar
-        setSupportActionBar(appbar);
+        setSupportActionBar(appBar);
 
         // Enable action bar up arrow to behave as home button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -119,7 +120,7 @@ public class EditActivity extends AppCompatActivity {
 
         // Offset popup from corner
         popupMoreOptions.setHorizontalOffset((int) -DimenUtil.dpToPx(this, 8f));
-        popupMoreOptions.setVerticalOffset(-appbar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
+        popupMoreOptions.setVerticalOffset(-appBar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
 
         // Show above keyboard, if applicable
         popupMoreOptions.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NOT_NEEDED);
@@ -142,6 +143,8 @@ public class EditActivity extends AppCompatActivity {
 
                 if ("filename".equals(itemTag)) {
                     promptRenameFile();
+                } else if ("word_wrap".equals(itemTag)) {
+                    setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) adapter.getItem(i)).getState());
                 }
             }
 
@@ -221,7 +224,7 @@ public class EditActivity extends AppCompatActivity {
         setTitle(fileName);
 
         // Set app bar title
-        appbar.setTitle(fileName);
+        appBar.setTitle(fileName);
 
         // If more options popup list view has been constructed
         if (popupMoreOptionsAdapter != null) {
@@ -245,6 +248,16 @@ public class EditActivity extends AppCompatActivity {
 
             // Set task description
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
+        }
+    }
+
+    private void setWordWrap(boolean wordWrap) {
+        if (wordWrap) {
+            // Limit editor width to screen width
+            editor.setMaxWidth(findViewById(android.R.id.content).getWidth());
+        } else {
+            // Maximize max width
+            editor.setMaxWidth(Integer.MAX_VALUE);
         }
     }
 
@@ -352,6 +365,8 @@ public class EditActivity extends AppCompatActivity {
     private class PopupMoreOptionsAdapter extends BaseAdapter {
 
         private Context context;
+
+        // TODO: add a set of listeners to respond to non-click data changes
 
         private List<Item> list;
 
