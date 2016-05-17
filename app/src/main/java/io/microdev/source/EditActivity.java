@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ListPopupWindow;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import io.microdev.source.util.Callback;
@@ -435,6 +437,12 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void ring(DialogResultFindReplace arg) {
+                // If a replacement is being made
+                if (arg.isEnableReplace()) {
+                } else {
+                    // Perform search
+                    performEditorSearch(arg.getSearch(), 0, false, !arg.isEnableMatchCase());
+                }
             }
 
         });
@@ -653,7 +661,84 @@ public class EditActivity extends AppCompatActivity {
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
-    private class DialogResultFindReplace {
+    private void performEditorSearch(String search, int start, boolean reverse, boolean ignoreCase) {
+        // Get editor text
+        Editable text = editor.getText();
+        String str = text.toString();
+
+        // Deal with case sensitivity
+        if (ignoreCase) {
+            str = str.toLowerCase(Locale.getDefault());
+            search = search.toLowerCase(Locale.getDefault());
+        }
+
+        // Search for text
+        int index;
+        if (reverse) {
+            index = str.lastIndexOf(search, start);
+        } else {
+            index = str.indexOf(search, start);
+        }
+
+        // Snackbar for results
+        final Snackbar snackbar;
+
+        // If a match was found
+        if (index > -1) {
+            // Make selection in editor
+            editor.setSelection(index, index + search.length());
+
+            // Count occurrences (a little hacky, but it works)
+            int numOccurrences = (" " + str + " ").split(search).length - 1;
+
+            // Get current occurrence (even worse!)
+            int occurrence = numOccurrences - (" " + str.substring(index + search.length()) + " ").split(search).length + 1;
+
+            // Build an indefinite snackbar for find next operation
+            snackbar = Snackbar.make(editor, getString(R.string.operation_activity_edit_editor_search_result_snackbar_success_text, occurrence, numOccurrences), Snackbar.LENGTH_INDEFINITE);
+
+            // Make final copies of stuff for callback use
+            final String searchCopy = search;
+            final int indexCopy = index;
+            final boolean reverseCopy = reverse;
+            final boolean ignoreCaseCopy = ignoreCase;
+
+            // If there are more occurrences
+            if (numOccurrences - occurrence > 0) {
+                // Add a find next button
+                snackbar.setAction(R.string.operation_activity_edit_editor_search_result_snackbar_success_action_next_text, new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        // Recurse into find next operation
+                        performEditorSearch(searchCopy, indexCopy + searchCopy.length(), reverseCopy, ignoreCaseCopy);
+                    }
+
+                });
+            }
+        } else {
+            // Build a snackbar for failure notification
+            snackbar = Snackbar.make(editor, getString(R.string.operation_activity_edit_editor_search_result_snackbar_fail_text, search), Snackbar.LENGTH_LONG);
+        }
+
+        // Show the result snackbar
+        snackbar.show();
+
+        // Ensure dismissal after 10 seconds
+        findViewById(android.R.id.content).postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                // Dismiss if shown
+                if (snackbar.isShownOrQueued()) {
+                    snackbar.dismiss();
+                }
+            }
+
+        }, 10000l);
+    }
+
+    private static class DialogResultFindReplace {
 
         private String search;
         private String replace;
