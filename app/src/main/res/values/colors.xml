@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="colorPrimary">#607d8b</color>
-    <color name="colorPrimaryDark">#455a64</color>
-    <color name="colorAccent">#40c4ff</color>
+    <color name="colorPrimary">#ff3f51b5</color>
+    <color name="colorPrimaryDark">#ff303f9f</color>
+    <color name="colorAccent">#ffec407a</color>
 
     <color name="activity_edit_editor_colorLineHighlight">#2040c4ff</color>
     <color name="activity_edit_editor_colorLineNumberColumnBg">#e0e0e0</color>
