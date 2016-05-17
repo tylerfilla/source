@@ -12,6 +12,6 @@
     <string name="menu_activity_edit_item_insert_title">Insert</string>
     <string name="menu_activity_edit_item_more_options_title">More</string>
 
-    <string name="_default_document_name">Untitled</string>
+    <string name="_default_file_name">Untitled</string>
 
 </resources>

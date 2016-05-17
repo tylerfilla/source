@@ -3,6 +3,7 @@ package io.microdev.source;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -13,15 +14,16 @@ import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -42,12 +44,13 @@ import static io.microdev.source.util.DimenUtil.dpToPx;
 public class EditActivity extends AppCompatActivity {
 
     private File file;
+    private String fileName;
 
-    private Toolbar toolbar;
+    private Toolbar appbar;
     private EditorText editor;
 
-    //private PopupWindow popupMoreOptions;
     private ListPopupWindow popupMoreOptions;
+    private PopupMoreOptionsAdapter popupMoreOptionsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,46 +63,31 @@ public class EditActivity extends AppCompatActivity {
         if (getIntent().getData() != null) {
             // Get file for URI
             file = new File(getIntent().getDataString());
+
+            // Get name of file
+            fileName = file.getName();
+        } else {
+            // Nullify file
+            file = null;
+
+            // Use default filename
+            fileName = getString(R.string._default_file_name);
         }
 
         // Find editor view
         editor = (EditorText) findViewById(R.id.activityEditEditor);
 
-        // Find toolbar
-        toolbar = (Toolbar) findViewById(R.id.activityEditToolbar);
+        // Find app bar
+        appbar = (Toolbar) findViewById(R.id.activityEditToolbar);
 
-        // Set action bar to custom toolbar
-        setSupportActionBar(toolbar);
+        // Set action bar to custom app bar
+        setSupportActionBar(appbar);
 
         // Enable action bar up arrow to behave as home button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Decide action bar title based on file presence
-        if (file == null) {
-            // Default title
-            toolbar.setTitle(getString(R.string._default_document_name));
-        } else {
-            // Set title to file name
-            toolbar.setTitle(file.getName());
-        }
-
-        // Handle task descriptions on Lollipop+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Resolve app icon
-            Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-
-            // Resolve primary color
-            int colorPrimary;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                colorPrimary = getResources().getColor(R.color.colorPrimary, getTheme());
-            } else {
-                //noinspection deprecation
-                colorPrimary = getResources().getColor(R.color.colorPrimary);
-            }
-
-            // Set task description
-            setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
-        }
+        // Establish current filename
+        setFileName(fileName);
     }
 
     @Override
@@ -118,18 +106,42 @@ public class EditActivity extends AppCompatActivity {
         // Create more options popup
         popupMoreOptions = new ListPopupWindow(this);
 
-        // Set popup adapter
-        popupMoreOptions.setAdapter(new PopupMoreOptionsAdapter(this));
+        // Create and set popup adapter
+        popupMoreOptionsAdapter = new PopupMoreOptionsAdapter(this);
+        popupMoreOptions.setAdapter(popupMoreOptionsAdapter);
 
         // FIXME: Generalize width computation
         popupMoreOptions.setWidth((int) DimenUtil.dpToPx(this, 288f));
 
         // Offset popup from corner
         popupMoreOptions.setHorizontalOffset((int) -DimenUtil.dpToPx(this, 8f));
-        popupMoreOptions.setVerticalOffset(-toolbar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
+        popupMoreOptions.setVerticalOffset(-appbar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
 
         // Show above keyboard, if applicable
         popupMoreOptions.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NOT_NEEDED);
+
+        // Listen for clicks
+        popupMoreOptions.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                PopupMoreOptionsAdapter adapter = (PopupMoreOptionsAdapter) adapterView.getAdapter();
+
+                // Send click notice to adapter
+                adapter.onItemClick(i);
+
+                // Dismiss popup
+                popupMoreOptions.dismiss();
+
+                // Get tag of clicked item
+                String itemTag = adapter.getItem(i).getTag();
+
+                if ("filename".equals(itemTag)) {
+                    promptRenameFile();
+                }
+            }
+
+        });
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -156,9 +168,7 @@ public class EditActivity extends AppCompatActivity {
         case R.id.menuActivityEditMoreOptions:
             // More options button pressed
             // Show more options popup
-            View buttonMoreOptions = findViewById(R.id.menuActivityEditMoreOptions);
-            popupMoreOptions.setAnchorView(buttonMoreOptions);
-            buttonMoreOptions.setOnTouchListener(popupMoreOptions.createDragToOpenListener(buttonMoreOptions));
+            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditMoreOptions));
             popupMoreOptions.show();
             break;
         default:
@@ -189,6 +199,61 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
+    private String getFileName() {
+        return fileName;
+    }
+
+    private void setFileName(String fileName) {
+        // Change filename
+        this.fileName = fileName;
+
+        // Is a file set?
+        if (file != null) {
+            // Rename physical file
+            file.renameTo(new File(file.getParentFile(), fileName));
+        }
+
+        // Set app bar title
+        appbar.setTitle(fileName);
+
+        // If more options popup list view has been constructed
+        if (popupMoreOptionsAdapter != null) {
+            // Notify it of a dataset change (due to new fileName)
+            popupMoreOptionsAdapter.notifyDataSetChanged();
+        }
+
+        // Handle task descriptions on Lollipop+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Resolve app icon
+            Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+
+            // Resolve primary color
+            int colorPrimary;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                colorPrimary = getResources().getColor(R.color.colorPrimary, getTheme());
+            } else {
+                //noinspection deprecation
+                colorPrimary = getResources().getColor(R.color.colorPrimary);
+            }
+
+            // Set task description
+            setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
+        }
+    }
+
+    private void promptRenameFile() {
+        // Display rename dialog
+        displayDialogRename(new Callback<String>() {
+
+            @Override
+            public void ring(String arg) {
+                // Set file name
+                setFileName(arg);
+            }
+
+        });
+    }
+
     private void displayDialogRename(final Callback<String> callback) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -199,13 +264,10 @@ public class EditActivity extends AppCompatActivity {
         // Content layout for name input
         FrameLayout contentLayout = new FrameLayout(this);
 
-        // Get name of file before change
-        final String nameBefore = file == null ? getString(R.string._default_document_name) : file.getName();
-
         // Create a text input for name entry
         final EditText editTextName = new EditText(this);
-        editTextName.setText(nameBefore);
-        editTextName.setHint(nameBefore);
+        editTextName.setText(fileName);
+        editTextName.setHint(fileName);
         editTextName.setSingleLine();
         editTextName.selectAll();
 
@@ -260,7 +322,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Disable OK button if name box is empty or unchanged
-                if (s.length() > 0 && !s.toString().equals(nameBefore)) {
+                if (s.length() > 0 && !s.toString().equals(fileName)) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
@@ -280,7 +342,7 @@ public class EditActivity extends AppCompatActivity {
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
-    private static class PopupMoreOptionsAdapter extends BaseAdapter {
+    private class PopupMoreOptionsAdapter extends BaseAdapter {
 
         private Context context;
 
@@ -292,23 +354,29 @@ public class EditActivity extends AppCompatActivity {
             list = new ArrayList<>();
 
             // FIXME: externalize these somehow
-            list.add(new ItemText("Name of file"));
-            list.add(new ItemSeparator());
-            list.add(new ItemText("Go to..."));
-            list.add(new ItemText("Find and replace..."));
-            list.add(new ItemSeparator());
-            list.add(new ItemSwitch("Word wrap", false));
-            list.add(new ItemSwitch("Syntax highlighting", true));
-            list.add(new ItemSeparator());
-            list.add(new ItemText("How"));
-            list.add(new ItemText("well"));
-            list.add(new ItemText("does"));
-            list.add(new ItemText("this"));
-            list.add(new ItemText("scroll?"));
-            list.add(new ItemText("scroll?"));
-            list.add(new ItemText("scroll?"));
-            list.add(new ItemText("scroll?"));
-            list.add(new ItemText("scroll?"));
+
+            final ItemText itemFileName = new ItemText("filename", Html.fromHtml("<b>" + getFileName() + "</b>"));
+
+            list.add(itemFileName);
+            list.add(new ItemSeparator(null));
+            list.add(new ItemText("find", "Find and replace..."));
+            list.add(new ItemText("goto", "Go to..."));
+            list.add(new ItemSeparator(null));
+            list.add(new ItemSwitch("word_wrap", "Word wrap", false));
+            list.add(new ItemSwitch("syntax_highlighting", "Syntax highlighting", true));
+
+            // Observe changes in the underlying data
+            registerDataSetObserver(new DataSetObserver() {
+
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+
+                    // Update filename
+                    itemFileName.setText(Html.fromHtml("<b>" + getFileName() + "</b>"));
+                }
+
+            });
         }
 
         @Override
@@ -323,7 +391,7 @@ public class EditActivity extends AppCompatActivity {
 
         @Override
         public long getItemId(int i) {
-            return getItem(i).hashCode();
+            return i;
         }
 
         @Override
@@ -331,13 +399,27 @@ public class EditActivity extends AppCompatActivity {
             return getItem(i).getView();
         }
 
-        private interface Item {
+        public void onItemClick(int i) {
+            getItem(i).onClick();
+        }
 
-            View getView();
+        private abstract class Item {
+
+            abstract View getView();
+
+            abstract String getTag();
+
+            abstract void onClick();
 
         }
 
-        private class ItemSeparator implements Item {
+        private class ItemSeparator extends Item {
+
+            private String tag;
+
+            public ItemSeparator(String tag) {
+                this.tag = tag;
+            }
 
             @Override
             public View getView() {
@@ -349,13 +431,33 @@ public class EditActivity extends AppCompatActivity {
                 return view;
             }
 
+            @Override
+            public String getTag() {
+                return tag;
+            }
+
+            @Override
+            public void onClick() {
+                System.out.println("You deserve a medal...");
+            }
+
         }
 
-        private class ItemText implements Item {
+        private class ItemText extends Item {
 
+            private String tag;
             private CharSequence text;
 
-            private ItemText(CharSequence text) {
+            public ItemText(String tag, CharSequence text) {
+                this.tag = tag;
+                this.text = text;
+            }
+
+            public CharSequence getText() {
+                return text;
+            }
+
+            public void setText(CharSequence text) {
                 this.text = text;
             }
 
@@ -363,6 +465,7 @@ public class EditActivity extends AppCompatActivity {
             public View getView() {
                 TextView textView = new TextView(context);
 
+                // noinspection deprecation
                 textView.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_PopupMenu);
                 textView.setTextSize(16f);
                 textView.setPadding((int) dpToPx(context, 16f), 0, (int) dpToPx(context, 16f), 0);
@@ -373,14 +476,25 @@ public class EditActivity extends AppCompatActivity {
                 return textView;
             }
 
+            @Override
+            public String getTag() {
+                return tag;
+            }
+
+            @Override
+            public void onClick() {
+            }
+
         }
 
         private class ItemSwitch extends ItemText {
 
             private boolean state;
 
-            private ItemSwitch(CharSequence text, boolean state) {
-                super(text);
+            private SwitchCompat viewSwitch;
+
+            private ItemSwitch(String tag, CharSequence text, boolean state) {
+                super(tag, text);
 
                 this.state = state;
             }
@@ -395,39 +509,38 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public View getView() {
+                // Root layout for this item
                 RelativeLayout view = new RelativeLayout(context);
 
-                view.setBackgroundDrawable(context.getResources().getDrawable(android.R.drawable.menuitem_background));
-
+                // Configure menu item layout params
                 view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+                // Get base text view from super
                 View viewBase = super.getView();
 
-                viewBase.setFocusable(false);
+                // Configure switch layout params
+                RelativeLayout.LayoutParams viewBaseLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                viewBase.setLayoutParams(viewBaseLayoutParams);
 
-                final SwitchCompat viewSwitch = new SwitchCompat(context);
+                // Create a switch control
+                viewSwitch = new SwitchCompat(context);
 
+                // Configure switch layout params
                 RelativeLayout.LayoutParams viewSwitchLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 viewSwitchLayoutParams.rightMargin = (int) DimenUtil.dpToPx(context, 16f);
                 viewSwitchLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                 viewSwitchLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
                 viewSwitch.setLayoutParams(viewSwitchLayoutParams);
 
+                // Let the menu do all the talking
+                viewBase.setFocusable(false);
+                viewSwitch.setFocusable(false);
+
+                // Add components to root view
                 view.addView(viewBase);
                 view.addView(viewSwitch);
 
-                view.setOnTouchListener(new View.OnTouchListener() {
-
-                    @Override
-                    public boolean onTouch(View view, MotionEvent event) {
-                        // Forward motion to switch
-                        viewSwitch.onTouchEvent(event);
-
-                        return true;
-                    }
-
-                });
-
+                // Handle switch state
                 viewSwitch.setChecked(state);
                 viewSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -439,6 +552,17 @@ public class EditActivity extends AppCompatActivity {
                 });
 
                 return view;
+            }
+
+            @Override
+            public void onClick() {
+                // Toggle internal state
+                state = !state;
+
+                // Toggle external state
+                if (viewSwitch != null) {
+                    viewSwitch.toggle();
+                }
             }
 
         }
