@@ -37,7 +37,9 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.microdev.source.util.Callback;
 import io.microdev.source.util.DimenUtil;
@@ -133,22 +135,70 @@ public class EditActivity extends AppCompatActivity {
                 PopupMoreOptionsAdapter adapter = (PopupMoreOptionsAdapter) adapterView.getAdapter();
 
                 // Send click notice to adapter
-                adapter.onItemClick(i);
+                adapter.handleItemClick(i);
 
                 // Dismiss popup
                 popupMoreOptions.dismiss();
+            }
 
-                // Get tag of clicked item
-                String itemTag = adapter.getItem(i).getTag();
+        });
 
-                if ("filename".equals(itemTag)) {
+        // Listen for item actions
+        popupMoreOptionsAdapter.addOnItemActionListener(new PopupMoreOptionsAdapter.OnItemActionListener() {
+
+            @Override
+            public void onItemAction(PopupMoreOptionsAdapter.Item item) {
+                // Perform corresponding action
+                if ("filename".equals(item.getTag())) {
                     promptRenameFile();
-                } else if ("word_wrap".equals(itemTag)) {
-                    setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) adapter.getItem(i)).getState());
+                } else if ("word_wrap".equals(item.getTag())) {
+                    setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
+                } else if ("syntax_highlighting".equals(item.getTag())) {
+                    // TODO: Enable/disable syntax highlighting accordingly
                 }
             }
 
         });
+
+        // Get adapter list
+        final List<PopupMoreOptionsAdapter.Item> popupMoreOptionsAdapterList = popupMoreOptionsAdapter.getList();
+
+        // Observe dataset changes
+        popupMoreOptionsAdapter.registerDataSetObserver(new DataSetObserver() {
+
+            @Override
+            public void onChanged() {
+                super.onChanged();
+
+                // Iterate over items to update them
+                for (PopupMoreOptionsAdapter.Item item : popupMoreOptionsAdapterList) {
+                    if ("filename".equals(item.getTag())) {
+                        SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
+
+                        // Get filename
+                        itemFileNameText.append(getFileName());
+
+                        // Embolden and enlarge by 15%
+                        itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        itemFileNameText.setSpan(new RelativeSizeSpan(1.15f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        ((PopupMoreOptionsAdapter.ItemText) item).setText(itemFileNameText);
+                    }
+                }
+            }
+
+        });
+
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", "[ filename ]"));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", "Find and replace..."));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", "Go to..."));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "word_wrap", "Word wrap", false));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", "Syntax highlighting", true));
+
+        // Initial data
+        popupMoreOptionsAdapter.notifyDataSetChanged();
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -226,12 +276,6 @@ public class EditActivity extends AppCompatActivity {
         // Set app bar title
         appBar.setTitle(fileName);
 
-        // If more options popup list view has been constructed
-        if (popupMoreOptionsAdapter != null) {
-            // Notify it of a dataset change (due to new fileName)
-            popupMoreOptionsAdapter.notifyDataSetChanged();
-        }
-
         // Handle task descriptions on Lollipop+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Resolve app icon
@@ -242,12 +286,18 @@ public class EditActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 colorPrimary = getResources().getColor(R.color.colorPrimary, getTheme());
             } else {
-                //noinspection deprecation
+                // noinspection deprecation
                 colorPrimary = getResources().getColor(R.color.colorPrimary);
             }
 
             // Set task description
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
+        }
+
+        // If more options popup adapter has been constructed
+        if (popupMoreOptionsAdapter != null) {
+            // Notify it of a dataset change (due to new fileName)
+            popupMoreOptionsAdapter.notifyDataSetChanged();
         }
     }
 
@@ -362,51 +412,30 @@ public class EditActivity extends AppCompatActivity {
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
-    private class PopupMoreOptionsAdapter extends BaseAdapter {
+    private static class PopupMoreOptionsAdapter extends BaseAdapter {
 
         private Context context;
 
-        // TODO: add a set of listeners to respond to non-click data changes
-
         private List<Item> list;
+        private Set<OnItemActionListener> listenerSet;
 
-        private PopupMoreOptionsAdapter(Context context) {
+        private PopupMoreOptionsAdapter(final EditActivity context) {
             this.context = context;
 
             list = new ArrayList<>();
+            listenerSet = new HashSet<>();
+        }
 
-            // FIXME: externalize these somehow
+        public List<Item> getList() {
+            return list;
+        }
 
-            SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
-            itemFileNameText.append(getFileName());
-            itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            itemFileNameText.setSpan(new RelativeSizeSpan(1.15f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            final ItemText itemFileName = new ItemText("filename", itemFileNameText);
+        public void addOnItemActionListener(OnItemActionListener listener) {
+            listenerSet.add(listener);
+        }
 
-            list.add(itemFileName);
-            list.add(new ItemSeparator(null));
-            list.add(new ItemText("find", "Find and replace..."));
-            list.add(new ItemText("goto", "Go to..."));
-            list.add(new ItemSeparator(null));
-            list.add(new ItemSwitch("word_wrap", "Word wrap", false));
-            list.add(new ItemSwitch("syntax_highlighting", "Syntax highlighting", true));
-
-            // Observe changes in the underlying data
-            registerDataSetObserver(new DataSetObserver() {
-
-                @Override
-                public void onChanged() {
-                    super.onChanged();
-
-                    // Update filename
-                    SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
-                    itemFileNameText.append(getFileName());
-                    itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    itemFileNameText.setSpan(new RelativeSizeSpan(1.15f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    itemFileName.setText(itemFileNameText);
-                }
-
-            });
+        public void removeOnItemActionListener(OnItemActionListener listener) {
+            listenerSet.remove(listener);
         }
 
         @Override
@@ -429,33 +458,41 @@ public class EditActivity extends AppCompatActivity {
             return getItem(i).getView();
         }
 
-        public void onItemClick(int i) {
+        public void handleItemClick(int i) {
             getItem(i).onClick();
         }
 
-        private abstract class Item {
+        private void handleItemAction(Item item) {
+            for (OnItemActionListener listener : listenerSet) {
+                listener.onItemAction(item);
+            }
+        }
 
-            abstract View getView();
+        public interface Item {
 
-            abstract String getTag();
+            View getView();
 
-            abstract void onClick();
+            String getTag();
+
+            void onClick();
 
         }
 
-        private class ItemSeparator extends Item {
+        public static class ItemSeparator implements Item {
 
+            private PopupMoreOptionsAdapter adapter;
             private String tag;
 
-            public ItemSeparator(String tag) {
+            public ItemSeparator(PopupMoreOptionsAdapter adapter, String tag) {
+                this.adapter = adapter;
                 this.tag = tag;
             }
 
             @Override
             public View getView() {
-                View view = new View(context);
+                View view = new View(adapter.context);
 
-                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) DimenUtil.dpToPx(context, 1f)));
+                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) DimenUtil.dpToPx(adapter.context, 1f)));
                 view.setBackgroundColor(0xffdddddd);
 
                 return view;
@@ -468,17 +505,21 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onClick() {
-                System.out.println("You deserve a medal...");
+                adapter.handleItemAction(this);
+
+                System.out.println("You deserve a medal.");
             }
 
         }
 
-        private class ItemText extends Item {
+        public static class ItemText implements Item {
 
+            private PopupMoreOptionsAdapter adapter;
             private String tag;
             private CharSequence text;
 
-            public ItemText(String tag, CharSequence text) {
+            public ItemText(PopupMoreOptionsAdapter adapter, String tag, CharSequence text) {
+                this.adapter = adapter;
                 this.tag = tag;
                 this.text = text;
             }
@@ -493,13 +534,13 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public View getView() {
-                TextView textView = new TextView(context);
+                TextView textView = new TextView(adapter.context);
 
                 // noinspection deprecation
-                textView.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_PopupMenu);
+                textView.setTextAppearance(adapter.context, android.R.style.TextAppearance_DeviceDefault_Widget_PopupMenu);
                 textView.setTextSize(16f);
-                textView.setPadding((int) dpToPx(context, 16f), 0, (int) dpToPx(context, 16f), 0);
-                textView.setHeight((int) dpToPx(context, 48f));
+                textView.setPadding((int) dpToPx(adapter.context, 16f), 0, (int) dpToPx(adapter.context, 16f), 0);
+                textView.setHeight((int) dpToPx(adapter.context, 48f));
                 textView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
                 textView.setText(text);
 
@@ -513,19 +554,22 @@ public class EditActivity extends AppCompatActivity {
 
             @Override
             public void onClick() {
+                adapter.handleItemAction(this);
             }
 
         }
 
-        private class ItemSwitch extends ItemText {
+        public static class ItemSwitch extends ItemText {
 
+            private PopupMoreOptionsAdapter adapter;
             private boolean state;
 
             private SwitchCompat viewSwitch;
 
-            private ItemSwitch(String tag, CharSequence text, boolean state) {
-                super(tag, text);
+            private ItemSwitch(PopupMoreOptionsAdapter adapter, String tag, CharSequence text, boolean state) {
+                super(adapter, tag, text);
 
+                this.adapter = adapter;
                 this.state = state;
             }
 
@@ -540,7 +584,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public View getView() {
                 // Root layout for this item
-                RelativeLayout view = new RelativeLayout(context);
+                RelativeLayout view = new RelativeLayout(adapter.context);
 
                 // Configure menu item layout params
                 view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -553,11 +597,11 @@ public class EditActivity extends AppCompatActivity {
                 viewBase.setLayoutParams(viewBaseLayoutParams);
 
                 // Create a switch control
-                viewSwitch = new SwitchCompat(context);
+                viewSwitch = new SwitchCompat(adapter.context);
 
                 // Configure switch layout params
                 RelativeLayout.LayoutParams viewSwitchLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                viewSwitchLayoutParams.rightMargin = (int) DimenUtil.dpToPx(context, 16f);
+                viewSwitchLayoutParams.rightMargin = (int) DimenUtil.dpToPx(adapter.context, 16f);
                 viewSwitchLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                 viewSwitchLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
                 viewSwitch.setLayoutParams(viewSwitchLayoutParams);
@@ -577,6 +621,8 @@ public class EditActivity extends AppCompatActivity {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                         state = b;
+
+                        adapter.handleItemAction(ItemSwitch.this);
                     }
 
                 });
@@ -593,7 +639,15 @@ public class EditActivity extends AppCompatActivity {
                 if (viewSwitch != null) {
                     viewSwitch.toggle();
                 }
+
+                adapter.handleItemAction(this);
             }
+
+        }
+
+        public interface OnItemActionListener {
+
+            void onItemAction(Item item);
 
         }
 

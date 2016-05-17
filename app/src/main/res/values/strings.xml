@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Found globally -->
     <string name="app_name">Source</string>
 
+    <!-- Found in edit activity rename dialog -->
     <string name="dialog_activity_edit_rename_title">Rename file</string>
     <string name="dialog_activity_edit_rename_button_cancel">Cancel</string>
     <string name="dialog_activity_edit_rename_button_rename">Rename</string>
 
+    <!-- Found in edit activity options menu -->
     <string name="menu_activity_edit_item_undo_title">Undo</string>
     <string name="menu_activity_edit_item_redo_title">Redo</string>
     <string name="menu_activity_edit_item_insert_title">Insert</string>
     <string name="menu_activity_edit_item_more_options_title">More</string>
+
+    <!-- Found in edit activity more options popup -->
+    <string name="popup_activity_edit_more_options_find">Find and replace...</string>
+    <string name="popup_activity_edit_more_options_goto">Go to...</string>
+    <string name="popup_activity_edit_more_options_word_wrap">Word wrap</string>
+    <string name="popup_activity_edit_more_options_syntax_highlighting">Syntax highlighting</string>
 
     <string name="_default_file_name">Untitled</string>
 
