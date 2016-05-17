@@ -131,7 +131,7 @@ public class EditorText extends EditText {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             setBackground(null);
         } else {
-            //noinspection deprecation
+            // noinspection deprecation
             setBackgroundDrawable(null);
         }
 

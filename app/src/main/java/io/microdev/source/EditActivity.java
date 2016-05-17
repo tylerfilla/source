@@ -1,6 +1,7 @@
 package io.microdev.source;
 
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,30 +9,48 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.microdev.source.util.Callback;
+import io.microdev.source.util.DimenUtil;
 import io.microdev.source.widget.editortext.EditorText;
+
+import static io.microdev.source.util.DimenUtil.dpToPx;
 
 public class EditActivity extends AppCompatActivity {
 
     private File file;
+
+    private Toolbar toolbar;
     private EditorText editor;
+
+    //private PopupWindow popupMoreOptions;
+    private ListPopupWindow popupMoreOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set activity layout
+        setContentView(R.layout.activity_edit);
 
         // Check if a file URI was passed
         if (getIntent().getData() != null) {
@@ -39,14 +58,14 @@ public class EditActivity extends AppCompatActivity {
             file = new File(getIntent().getDataString());
         }
 
-        // Inflate layout
-        setContentView(R.layout.activity_edit);
-
-        // Get editor view
+        // Find editor view
         editor = (EditorText) findViewById(R.id.activityEditEditor);
 
+        // Find toolbar
+        toolbar = (Toolbar) findViewById(R.id.activityEditToolbar);
+
         // Set action bar to custom toolbar
-        setSupportActionBar((Toolbar) findViewById(R.id.activityEditToolbar));
+        setSupportActionBar(toolbar);
 
         // Enable action bar up arrow to behave as home button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -54,10 +73,10 @@ public class EditActivity extends AppCompatActivity {
         // Decide action bar title based on file presence
         if (file == null) {
             // Default title
-            getSupportActionBar().setTitle(getString(R.string._default_document_name));
+            toolbar.setTitle(getString(R.string._default_document_name));
         } else {
             // Set title to file name
-            getSupportActionBar().setTitle(file.getName());
+            toolbar.setTitle(file.getName());
         }
 
         // Handle task descriptions on Lollipop+
@@ -81,8 +100,21 @@ public class EditActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate action bar menu
+        // Inflate menu
         getMenuInflater().inflate(R.menu.activity_edit, menu);
+
+        // Create more options popup
+        popupMoreOptions = new ListPopupWindow(this);
+
+        // Set popup adapter
+        popupMoreOptions.setAdapter(new PopupMoreOptionsAdapter(this));
+
+        // FIXME: Generalize width computation
+        popupMoreOptions.setWidth((int) DimenUtil.dpToPx(this, 232f));
+
+        // Offset popup from corner
+        popupMoreOptions.setHorizontalOffset((int) -DimenUtil.dpToPx(this, 8f));
+        popupMoreOptions.setVerticalOffset(-toolbar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -95,31 +127,38 @@ public class EditActivity extends AppCompatActivity {
             // Home button pressed (configured as action bar up arrow)
             // Finish activity
             finish();
-            return true;
+            break;
         case R.id.menuActivityEditUndo:
             // Undo button pressed
             // Instruct editor to undo last operation
             editor.undo();
-            return true;
+            break;
         case R.id.menuActivityEditRedo:
             // Redo button pressed
             // Instruct editor to redo last operation
             editor.redo();
-            return true;
+            break;
         case R.id.menuActivityEditMoreOptions:
-            // Menu button pressed
-            // TODO: Show options popup menu
-            displayDialogRename(new Callback<String>() {
-
-                @Override
-                public void ring(String obj) {
-                }
-
-            });
-            return true;
+            // More options button pressed
+            // Show more options popup
+            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditMoreOptions));
+            popupMoreOptions.show();
+            break;
         default:
             // Delegate to super if not handled
             return super.onOptionsItemSelected(item);
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        // Dismiss more options popup if showing, otherwise delegate to super
+        if (popupMoreOptions.isShowing()) {
+            popupMoreOptions.dismiss();
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -222,6 +261,89 @@ public class EditActivity extends AppCompatActivity {
 
         // Initially disable the OK button
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+    }
+
+    private static class PopupMoreOptionsAdapter extends BaseAdapter {
+
+        private Context context;
+
+        private List<Item> list;
+
+        private PopupMoreOptionsAdapter(Context context) {
+            this.context = context;
+
+            list = new ArrayList<>();
+
+            // FIXME
+            list.add(new ItemText("Name of file"));
+            list.add(new ItemSeparator());
+            list.add(new ItemText("Go to..."));
+            list.add(new ItemText("Find and replace..."));
+        }
+
+        @Override
+        public int getCount() {
+            return list.size();
+        }
+
+        @Override
+        public Item getItem(int i) {
+            return list.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return getItem(i).hashCode();
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            return getItem(i).getView();
+        }
+
+        private interface Item {
+
+            View getView();
+
+        }
+
+        private class ItemSeparator implements Item {
+
+            @Override
+            public View getView() {
+                View view = new View(context);
+
+                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) DimenUtil.dpToPx(context, 1f)));
+                view.setBackgroundResource(android.R.color.darker_gray);
+
+                return view;
+            }
+
+        }
+
+        private class ItemText implements Item {
+
+            private CharSequence text;
+
+            private ItemText(CharSequence text) {
+                this.text = text;
+            }
+
+            @Override
+            public View getView() {
+                TextView textView = new TextView(context);
+
+                textView.setPadding((int) dpToPx(context, 16f), 0, (int) dpToPx(context, 16f), 0);
+                textView.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_PopupMenu);
+                textView.setHeight((int) dpToPx(context, 48f));
+                textView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+                textView.setText(text);
+
+                return textView;
+            }
+
+        }
+
     }
 
 }

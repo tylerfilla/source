@@ -10,7 +10,7 @@
     <string name="menu_activity_edit_item_undo_title">Undo</string>
     <string name="menu_activity_edit_item_redo_title">Redo</string>
     <string name="menu_activity_edit_item_insert_title">Insert</string>
-    <string name="menu_activity_edit_item_more_options_title">More options</string>
+    <string name="menu_activity_edit_item_more_options_title">More</string>
 
     <string name="_default_document_name">Untitled</string>
 
