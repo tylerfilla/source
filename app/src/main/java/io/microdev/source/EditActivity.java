@@ -189,13 +189,14 @@ public class EditActivity extends AppCompatActivity {
 
         });
 
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", "[ filename ]"));
+        // Create "menu" items for popup
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", getFileName()));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", "Find and replace..."));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", "Go to..."));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", getString(R.string.popup_activity_edit_more_options_find)));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", getString(R.string.popup_activity_edit_more_options_goto)));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "word_wrap", "Word wrap", false));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", "Syntax highlighting", true));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "word_wrap", getString(R.string.popup_activity_edit_more_options_word_wrap), false));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", getString(R.string.popup_activity_edit_more_options_syntax_highlighting), true));
 
         // Initial data
         popupMoreOptionsAdapter.notifyDataSetChanged();
