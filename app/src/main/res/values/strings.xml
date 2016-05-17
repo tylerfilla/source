@@ -16,9 +16,11 @@
     <string name="menu_activity_edit_item_more_options_title">More</string>
 
     <!-- Found in edit activity more options popup -->
-    <string name="popup_activity_edit_more_options_find">Find and replace...</string>
     <string name="popup_activity_edit_more_options_goto">Go to...</string>
+    <string name="popup_activity_edit_more_options_find">Find and replace...</string>
     <string name="popup_activity_edit_more_options_word_wrap">Word wrap</string>
+    <string name="popup_activity_edit_more_options_line_numbers">Line numbers</string>
+    <string name="popup_activity_edit_more_options_language">Set language...</string>
     <string name="popup_activity_edit_more_options_syntax_highlighting">Syntax highlighting</string>
 
     <string name="_default_file_name">Untitled</string>

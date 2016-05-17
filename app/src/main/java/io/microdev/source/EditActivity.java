@@ -51,7 +51,7 @@ import static io.microdev.source.util.DimenUtil.dpToPx;
 public class EditActivity extends AppCompatActivity {
 
     private File file;
-    private String fileName;
+    private String filename;
 
     private Toolbar appBar;
     private PanView panView;
@@ -73,13 +73,13 @@ public class EditActivity extends AppCompatActivity {
             file = new File(getIntent().getDataString());
 
             // Get name of file
-            fileName = file.getName();
+            filename = file.getName();
         } else {
             // Nullify file
             file = null;
 
             // Use default filename
-            fileName = getString(R.string._default_file_name);
+            filename = getString(R.string._default_file_name);
         }
 
         // Find stuff
@@ -94,15 +94,23 @@ public class EditActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Establish current filename
-        setFileName(fileName);
+        setFilename(filename);
     }
 
     @Override
-    protected void onPause() {
-        // Dismiss more options popup
-        popupMoreOptions.dismiss();
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-        super.onPause();
+        // Store filename
+        outState.putString("filename", filename);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        // Retrieve filename
+        filename = savedInstanceState.getString("filename");
     }
 
     @Override
@@ -153,6 +161,8 @@ public class EditActivity extends AppCompatActivity {
                     promptRenameFile();
                 } else if ("word_wrap".equals(item.getTag())) {
                     setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
+                } else if ("line_numbers".equals(item.getTag())) {
+                    editor.setShowLineNumbers(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
                 } else if ("syntax_highlighting".equals(item.getTag())) {
                     // TODO: Enable/disable syntax highlighting accordingly
                 }
@@ -176,7 +186,7 @@ public class EditActivity extends AppCompatActivity {
                         SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
 
                         // Get filename
-                        itemFileNameText.append(getFileName());
+                        itemFileNameText.append(getFilename());
 
                         // Embolden and enlarge by 15%
                         itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -190,12 +200,15 @@ public class EditActivity extends AppCompatActivity {
         });
 
         // Create "menu" items for popup
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", getFileName()));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", getFilename()));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", getString(R.string.popup_activity_edit_more_options_find)));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", getString(R.string.popup_activity_edit_more_options_goto)));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", getString(R.string.popup_activity_edit_more_options_find)));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "word_wrap", getString(R.string.popup_activity_edit_more_options_word_wrap), false));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "line_numbers", getString(R.string.popup_activity_edit_more_options_line_numbers), true));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "language", getString(R.string.popup_activity_edit_more_options_language)));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", getString(R.string.popup_activity_edit_more_options_syntax_highlighting), true));
 
         // Initial data
@@ -257,25 +270,25 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
-    private String getFileName() {
-        return fileName;
+    private String getFilename() {
+        return filename;
     }
 
-    private void setFileName(String fileName) {
+    private void setFilename(String filename) {
         // Change filename
-        this.fileName = fileName;
+        this.filename = filename;
 
         // Is a file set?
         if (file != null) {
             // Rename physical file
-            file.renameTo(new File(file.getParentFile(), fileName));
+            file.renameTo(new File(file.getParentFile(), filename));
         }
 
         // Set activity title
-        setTitle(fileName);
+        setTitle(filename);
 
         // Set app bar title
-        appBar.setTitle(fileName);
+        appBar.setTitle(filename);
 
         // Handle task descriptions on Lollipop+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -297,7 +310,7 @@ public class EditActivity extends AppCompatActivity {
 
         // If more options popup adapter has been constructed
         if (popupMoreOptionsAdapter != null) {
-            // Notify it of a dataset change (due to new fileName)
+            // Notify it of a dataset change (due to new filename)
             popupMoreOptionsAdapter.notifyDataSetChanged();
         }
     }
@@ -319,7 +332,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public void ring(String arg) {
                 // Set file name
-                setFileName(arg);
+                setFilename(arg);
             }
 
         });
@@ -337,8 +350,8 @@ public class EditActivity extends AppCompatActivity {
 
         // Create a text input for name entry
         final EditText editTextName = new EditText(this);
-        editTextName.setText(fileName);
-        editTextName.setHint(fileName);
+        editTextName.setText(filename);
+        editTextName.setHint(filename);
         editTextName.setSingleLine();
         editTextName.selectAll();
 
@@ -393,7 +406,7 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Disable OK button if name box is empty or unchanged
-                if (s.length() > 0 && !s.toString().equals(fileName)) {
+                if (s.length() > 0 && !s.toString().equals(filename)) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);

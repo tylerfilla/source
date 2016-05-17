@@ -29,6 +29,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import io.microdev.source.R;
 
+import static io.microdev.source.util.DimenUtil.dpToPx;
+
 public class EditorText extends EditText {
 
     private static final int DEF_COLOR_LINE_HIGHLIGHT = 0x2040c4ff;
@@ -37,8 +39,8 @@ public class EditorText extends EditText {
     private static final boolean DEF_SHOW_LINE_HIGHLIGHT = true;
     private static final boolean DEF_SHOW_LINE_NUMBERS = true;
 
-    private static final float DEF_LINE_NUMBER_COLUMN_PADDING_LEFT = 32f;
-    private static final float DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT = 32f;
+    private static final float DEF_LINE_NUMBER_COLUMN_PADDING_LEFT_DP = 8f;
+    private static final float DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT_DP = 8f;
 
     private static final boolean DEF_ENABLE_SYNTAX_HIGHLIGHTING = true;
 
@@ -101,8 +103,8 @@ public class EditorText extends EditText {
         showLineHighlight = DEF_SHOW_LINE_HIGHLIGHT;
         showLineNumbers = DEF_SHOW_LINE_NUMBERS;
 
-        lineNumberColumnPaddingLeft = DEF_LINE_NUMBER_COLUMN_PADDING_LEFT;
-        lineNumberColumnPaddingRight = DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT;
+        lineNumberColumnPaddingLeft = dpToPx(getContext(), DEF_LINE_NUMBER_COLUMN_PADDING_LEFT_DP);
+        lineNumberColumnPaddingRight = dpToPx(getContext(), DEF_LINE_NUMBER_COLUMN_PADDING_RIGHT_DP);
 
         enableSyntaxHighlighting = DEF_ENABLE_SYNTAX_HIGHLIGHTING;
     }
@@ -157,7 +159,7 @@ public class EditorText extends EditText {
                 layout = getLayout();
 
                 // Update line number column width
-                updateLineNumberColumnWidth();
+                updateLineNumberColumnWidth(false);
             }
 
         });
@@ -216,6 +218,15 @@ public class EditorText extends EditText {
 
     public void setShowLineHighlight(boolean showLineHighlight) {
         this.showLineHighlight = showLineHighlight;
+    }
+
+    public boolean getShowLineNumbers() {
+        return showLineNumbers;
+    }
+
+    public void setShowLineNumbers(boolean showLineNumbers) {
+        this.showLineNumbers = showLineNumbers;
+        updateLineNumberColumnWidth(true);
     }
 
     public int getColorLineHighlight() {
@@ -282,9 +293,9 @@ public class EditorText extends EditText {
         this.syntaxHighlighter = syntaxHighlighter;
     }
 
-    private void updateLineNumberColumnWidth() {
-        // If line count has changed since last layout
-        if (lineCountCurrent != lineCountPrev) {
+    private void updateLineNumberColumnWidth(boolean force) {
+        // If line count has changed since last layout (or update is forced)
+        if (force || lineCountCurrent != lineCountPrev) {
             // Mark count as not changed
             lineCountPrev = lineCountCurrent;
         } else {
@@ -304,11 +315,17 @@ public class EditorText extends EditText {
         // Subtract old column width from left padding
         setPadding(getPaddingLeft() - (int) lineNumberColumnWidth, getPaddingTop(), getPaddingRight(), getPaddingBottom());
 
-        // Calculate new width of line number column
-        lineNumberColumnWidth = lineNumberColumnPaddingLeft + layout.getPaint().measureText(String.valueOf(numberedLines)) + lineNumberColumnPaddingRight;
+        // Rest depends on presence of line number column
+        if (showLineNumbers) {
+            // Calculate new width of line number column
+            lineNumberColumnWidth = lineNumberColumnPaddingLeft + layout.getPaint().measureText(String.valueOf(numberedLines)) + lineNumberColumnPaddingRight;
 
-        // Bump left padding for new column width
-        setPadding(getPaddingLeft() + (int) lineNumberColumnWidth, getPaddingTop(), getPaddingRight(), getPaddingBottom());
+            // Bump left padding for new column width
+            setPadding(getPaddingLeft() + (int) lineNumberColumnWidth, getPaddingTop(), getPaddingRight(), getPaddingBottom());
+        } else {
+            // No column means zero width
+            lineNumberColumnWidth = 0;
+        }
     }
 
     @Override
