@@ -217,6 +217,9 @@ public class EditActivity extends AppCompatActivity {
             file.renameTo(new File(file.getParentFile(), fileName));
         }
 
+        // Set activity title
+        setTitle(fileName);
+
         // Set app bar title
         appbar.setTitle(fileName);
 
