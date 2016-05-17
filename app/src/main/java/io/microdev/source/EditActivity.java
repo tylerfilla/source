@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -14,8 +15,11 @@ import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -355,7 +359,11 @@ public class EditActivity extends AppCompatActivity {
 
             // FIXME: externalize these somehow
 
-            final ItemText itemFileName = new ItemText("filename", Html.fromHtml("<b>" + getFileName() + "</b>"));
+            SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
+            itemFileNameText.append(getFileName());
+            itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            itemFileNameText.setSpan(new RelativeSizeSpan(1.15f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            final ItemText itemFileName = new ItemText("filename", itemFileNameText);
 
             list.add(itemFileName);
             list.add(new ItemSeparator(null));
@@ -373,7 +381,11 @@ public class EditActivity extends AppCompatActivity {
                     super.onChanged();
 
                     // Update filename
-                    itemFileName.setText(Html.fromHtml("<b>" + getFileName() + "</b>"));
+                    SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
+                    itemFileNameText.append(getFileName());
+                    itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    itemFileNameText.setSpan(new RelativeSizeSpan(1.15f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    itemFileName.setText(itemFileNameText);
                 }
 
             });
