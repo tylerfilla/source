@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ListPopupWindow;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -17,12 +18,15 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.File;
@@ -99,6 +103,14 @@ public class EditActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        // Dismiss more options popup
+        popupMoreOptions.dismiss();
+
+        super.onPause();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate menu
         getMenuInflater().inflate(R.menu.activity_edit, menu);
@@ -110,11 +122,14 @@ public class EditActivity extends AppCompatActivity {
         popupMoreOptions.setAdapter(new PopupMoreOptionsAdapter(this));
 
         // FIXME: Generalize width computation
-        popupMoreOptions.setWidth((int) DimenUtil.dpToPx(this, 232f));
+        popupMoreOptions.setWidth((int) DimenUtil.dpToPx(this, 288f));
 
         // Offset popup from corner
         popupMoreOptions.setHorizontalOffset((int) -DimenUtil.dpToPx(this, 8f));
         popupMoreOptions.setVerticalOffset(-toolbar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
+
+        // Show above keyboard, if applicable
+        popupMoreOptions.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NOT_NEEDED);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -276,11 +291,24 @@ public class EditActivity extends AppCompatActivity {
 
             list = new ArrayList<>();
 
-            // FIXME
+            // FIXME: externalize these somehow
             list.add(new ItemText("Name of file"));
             list.add(new ItemSeparator());
             list.add(new ItemText("Go to..."));
             list.add(new ItemText("Find and replace..."));
+            list.add(new ItemSeparator());
+            list.add(new ItemSwitch("Word wrap", false));
+            list.add(new ItemSwitch("Syntax highlighting", true));
+            list.add(new ItemSeparator());
+            list.add(new ItemText("How"));
+            list.add(new ItemText("well"));
+            list.add(new ItemText("does"));
+            list.add(new ItemText("this"));
+            list.add(new ItemText("scroll?"));
+            list.add(new ItemText("scroll?"));
+            list.add(new ItemText("scroll?"));
+            list.add(new ItemText("scroll?"));
+            list.add(new ItemText("scroll?"));
         }
 
         @Override
@@ -316,7 +344,7 @@ public class EditActivity extends AppCompatActivity {
                 View view = new View(context);
 
                 view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) DimenUtil.dpToPx(context, 1f)));
-                view.setBackgroundResource(android.R.color.darker_gray);
+                view.setBackgroundColor(0xffdddddd);
 
                 return view;
             }
@@ -335,13 +363,82 @@ public class EditActivity extends AppCompatActivity {
             public View getView() {
                 TextView textView = new TextView(context);
 
-                textView.setPadding((int) dpToPx(context, 16f), 0, (int) dpToPx(context, 16f), 0);
                 textView.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_PopupMenu);
+                textView.setTextSize(16f);
+                textView.setPadding((int) dpToPx(context, 16f), 0, (int) dpToPx(context, 16f), 0);
                 textView.setHeight((int) dpToPx(context, 48f));
                 textView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
                 textView.setText(text);
 
                 return textView;
+            }
+
+        }
+
+        private class ItemSwitch extends ItemText {
+
+            private boolean state;
+
+            private ItemSwitch(CharSequence text, boolean state) {
+                super(text);
+
+                this.state = state;
+            }
+
+            public boolean getState() {
+                return state;
+            }
+
+            public void setState(boolean state) {
+                this.state = state;
+            }
+
+            @Override
+            public View getView() {
+                RelativeLayout view = new RelativeLayout(context);
+
+                view.setBackgroundDrawable(context.getResources().getDrawable(android.R.drawable.menuitem_background));
+
+                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                View viewBase = super.getView();
+
+                viewBase.setFocusable(false);
+
+                final SwitchCompat viewSwitch = new SwitchCompat(context);
+
+                RelativeLayout.LayoutParams viewSwitchLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                viewSwitchLayoutParams.rightMargin = (int) DimenUtil.dpToPx(context, 16f);
+                viewSwitchLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                viewSwitchLayoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+                viewSwitch.setLayoutParams(viewSwitchLayoutParams);
+
+                view.addView(viewBase);
+                view.addView(viewSwitch);
+
+                view.setOnTouchListener(new View.OnTouchListener() {
+
+                    @Override
+                    public boolean onTouch(View view, MotionEvent event) {
+                        // Forward motion to switch
+                        viewSwitch.onTouchEvent(event);
+
+                        return true;
+                    }
+
+                });
+
+                viewSwitch.setChecked(state);
+                viewSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        state = b;
+                    }
+
+                });
+
+                return view;
             }
 
         }
