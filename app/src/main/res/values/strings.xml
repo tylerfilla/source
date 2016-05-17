@@ -5,9 +5,20 @@
     <string name="app_name">Source</string>
 
     <!-- Found in edit activity rename dialog -->
-    <string name="dialog_activity_edit_rename_title">Rename file</string>
-    <string name="dialog_activity_edit_rename_button_cancel">Cancel</string>
-    <string name="dialog_activity_edit_rename_button_rename">Rename</string>
+    <string name="dialog_activity_edit_rename_title">Rename File</string>
+    <string name="dialog_activity_edit_rename_button_cancel_text">Cancel</string>
+    <string name="dialog_activity_edit_rename_button_rename_text">Rename</string>
+
+    <!-- Found in edit activity find and replace dialog -->
+    <string name="dialog_activity_edit_find_title">Find and Replace</string>
+    <string name="dialog_activity_edit_find_input_search_hint">Search for...</string>
+    <string name="dialog_activity_edit_find_input_enable_match_case_hint">Match case</string>
+    <string name="dialog_activity_edit_find_input_enable_match_words_hint">Match words</string>
+    <string name="dialog_activity_edit_find_input_enable_replace_hint">Replace text</string>
+    <string name="dialog_activity_edit_find_input_replace_hint">Replace with...</string>
+    <string name="dialog_activity_edit_find_button_cancel_text">Cancel</string>
+    <string name="dialog_activity_edit_find_button_find_text">Find</string>
+    <string name="dialog_activity_edit_find_button_replace_text">Replace</string>
 
     <!-- Found in edit activity options menu -->
     <string name="menu_activity_edit_item_undo_title">Undo</string>

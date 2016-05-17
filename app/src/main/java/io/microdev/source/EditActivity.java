@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -159,6 +160,8 @@ public class EditActivity extends AppCompatActivity {
                 // Perform corresponding action
                 if ("filename".equals(item.getTag())) {
                     promptRenameFile();
+                } else if ("find".equals(item.getTag())) {
+                    promptFindReplace();
                 } else if ("word_wrap".equals(item.getTag())) {
                     setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
                 } else if ("line_numbers".equals(item.getTag())) {
@@ -346,7 +349,7 @@ public class EditActivity extends AppCompatActivity {
         builder.setTitle(R.string.dialog_activity_edit_rename_title);
 
         // Content layout for name input
-        FrameLayout contentLayout = new FrameLayout(this);
+        FrameLayout content = new FrameLayout(this);
 
         // Create a text input for name entry
         final EditText editTextName = new EditText(this);
@@ -362,17 +365,17 @@ public class EditActivity extends AppCompatActivity {
         layoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
         editTextName.setLayoutParams(layoutParams);
 
-        // Add name input to content layout
-        contentLayout.addView(editTextName);
+        // Add name input to content
+        content.addView(editTextName);
 
         // Add name input to dialog
-        builder.setView(contentLayout);
+        builder.setView(content);
 
         // Set up cancel button
-        builder.setNegativeButton(R.string.dialog_activity_edit_rename_button_cancel, null);
+        builder.setNegativeButton(R.string.dialog_activity_edit_rename_button_cancel_text, null);
 
         // Set up OK button
-        builder.setPositiveButton(R.string.dialog_activity_edit_rename_button_rename, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialog_activity_edit_rename_button_rename_text, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -407,6 +410,271 @@ public class EditActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Disable OK button if name box is empty or unchanged
                 if (s.length() > 0 && !s.toString().equals(filename)) {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+                } else {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+
+        });
+
+        // Show the dialog
+        dialog.show();
+
+        // Initially disable the OK button
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+    }
+
+    private void promptFindReplace() {
+        // Device to handle data once both search and replace data have been collected
+        final Callback<String[]> dataHandler = new Callback<String[]>() {
+
+            @Override
+            public void ring(String[] arg) {
+                System.out.println("Should find \"" + arg[0] + "\" and replace it with \"" + arg[1] + "\"");
+            }
+
+        };
+
+        // A place to store data
+        final String[] data = new String[2];
+
+        // Display find and replace dialog
+        displayDialogFindReplace(new Callback<String>() {
+
+            @Override
+            public void ring(String arg) {
+                // Store search data
+                data[0] = arg;
+
+                // If replace data has already been set
+                if (data[1] != null) {
+                    // Process data
+                    dataHandler.ring(data);
+                }
+            }
+
+        }, new Callback<String>() {
+
+            @Override
+            public void ring(String arg) {
+                // Store replace data
+                data[1] = arg;
+
+                // If search data has already been set
+                if (data[0] != null) {
+                    // Process data
+                    dataHandler.ring(data);
+                }
+            }
+
+        });
+    }
+
+    @SuppressWarnings("ResourceType")
+    private void displayDialogFindReplace(final Callback<String> search, final Callback<String> replace) {
+        // Construct a new dialog builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Set title from XML
+        builder.setTitle(R.string.dialog_activity_edit_find_title);
+
+        // Content layout
+        RelativeLayout content = new RelativeLayout(this);
+
+        // Set content padding as per Material design
+        int contentPaddingLeft = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        int contentPaddingRight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+        int contentPaddingTop = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        int contentPaddingBottom = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        content.setPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, contentPaddingBottom);
+
+        // Text input for search text
+        final EditText inputSearch = new EditText(this);
+        inputSearch.setId(1);
+        inputSearch.setHint(R.string.dialog_activity_edit_find_input_search_hint);
+        inputSearch.setSingleLine();
+
+        // Set layout parameters for search input
+        inputSearch.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // Create a text input for replacement text
+        final EditText inputReplace = new EditText(this);
+        inputReplace.setId(2);
+        inputReplace.setHint(R.string.dialog_activity_edit_find_input_replace_hint);
+        inputReplace.setVisibility(View.GONE);
+        inputReplace.setSingleLine();
+
+        // Set layout parameters for replacement input
+        RelativeLayout.LayoutParams inputReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputReplaceLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
+        inputReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputSearch.getId());
+        inputReplace.setLayoutParams(inputReplaceLayoutParams);
+
+        // Checkbox input to enable case matching
+        final CheckBox inputEnableMatchCase = new CheckBox(this);
+        inputEnableMatchCase.setId(3);
+        inputEnableMatchCase.setText(R.string.dialog_activity_edit_find_input_enable_match_case_hint);
+        inputEnableMatchCase.setChecked(false);
+
+        // Set layout parameters for enable match case input
+        RelativeLayout.LayoutParams inputEnableMatchCaseLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputEnableMatchCaseLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        inputEnableMatchCaseLayoutParams.addRule(RelativeLayout.BELOW, inputReplace.getId());
+        inputEnableMatchCase.setLayoutParams(inputEnableMatchCaseLayoutParams);
+
+        // Checkbox input to enable word matching
+        final CheckBox inputEnableMatchWords = new CheckBox(this);
+        inputEnableMatchWords.setId(4);
+        inputEnableMatchWords.setText(R.string.dialog_activity_edit_find_input_enable_match_words_hint);
+        inputEnableMatchWords.setChecked(false);
+
+        // Set layout parameters for enable match words input
+        RelativeLayout.LayoutParams inputEnableMatchWordsLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputEnableMatchWordsLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
+        inputEnableMatchWordsLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchCase.getId());
+        inputEnableMatchWords.setLayoutParams(inputEnableMatchWordsLayoutParams);
+
+        // Checkbox input to enable replacement
+        final CheckBox inputEnableReplace = new CheckBox(this);
+        inputEnableReplace.setId(5);
+        inputEnableReplace.setText(R.string.dialog_activity_edit_find_input_enable_replace_hint);
+        inputEnableReplace.setChecked(false);
+
+        // Set layout parameters for enable replace input
+        RelativeLayout.LayoutParams inputEnableReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputEnableReplaceLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
+        inputEnableReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchWords.getId());
+        inputEnableReplace.setLayoutParams(inputEnableReplaceLayoutParams);
+
+        // Add stuff to content layout
+        content.addView(inputSearch);
+        content.addView(inputReplace);
+        content.addView(inputEnableMatchCase);
+        content.addView(inputEnableMatchWords);
+        content.addView(inputEnableReplace);
+
+        // Add content to dialog
+        builder.setView(content);
+
+        // A place for all checkbox states
+        final boolean[] checkState = new boolean[3];
+
+        // Set up cancel button
+        builder.setNegativeButton(R.string.dialog_activity_edit_find_button_cancel_text, null);
+
+        // Set up OK button
+        builder.setPositiveButton(R.string.dialog_activity_edit_find_button_find_text, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                search.ring(inputSearch.getText().toString());
+                replace.ring(inputReplace.getText().toString());
+            }
+
+        });
+
+        // Build the dialog
+        final AlertDialog dialog = builder.create();
+
+        // Listen for changes on enable match case input
+        inputEnableMatchCase.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                // Deposit enable match case state
+                checkState[0] = b;
+            }
+
+        });
+
+        // Listen for changes on enable match words input
+        inputEnableMatchWords.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                // Deposit enable match words state
+                checkState[1] = b;
+            }
+
+        });
+
+        // Listen for changes on enable replace input
+        inputEnableReplace.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                // Deposit enable replace state
+                checkState[2] = b;
+
+                // Show/hide replacement input based on enable replace state
+                if (b) {
+                    // Show replacement input
+                    inputReplace.setVisibility(View.VISIBLE);
+
+                    // Rename OK button to "replace"
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(R.string.dialog_activity_edit_find_button_replace_text);
+
+                    // Transfer focus to replacement input if search input isn't empty
+                    if (inputSearch.length() > 0) {
+                        inputReplace.requestFocus();
+                    }
+                } else {
+                    // Hide replacement input
+                    inputReplace.setVisibility(View.GONE);
+
+                    // Rename OK button to "find"
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(R.string.dialog_activity_edit_find_button_find_text);
+
+                    // Transfew focus to search input
+                    inputSearch.requestFocus();
+                }
+
+                if (inputSearch.length() > 0 && (!checkState[2] || inputReplace.length() > 0)) {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+                } else {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+
+        });
+
+        // Watch for text changes in search input
+        inputSearch.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0 && (!checkState[2] || inputReplace.length() > 0)) {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+                } else {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+
+        });
+
+        // Watch for text changes in replacement input
+        inputReplace.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0 && inputSearch.length() > 0) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
                 } else {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
