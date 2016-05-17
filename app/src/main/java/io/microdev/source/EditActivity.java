@@ -141,7 +141,9 @@ public class EditActivity extends AppCompatActivity {
         case R.id.menuActivityEditMoreOptions:
             // More options button pressed
             // Show more options popup
-            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditMoreOptions));
+            View buttonMoreOptions = findViewById(R.id.menuActivityEditMoreOptions);
+            popupMoreOptions.setAnchorView(buttonMoreOptions);
+            buttonMoreOptions.setOnTouchListener(popupMoreOptions.createDragToOpenListener(buttonMoreOptions));
             popupMoreOptions.show();
             break;
         default:
