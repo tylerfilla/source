@@ -3,15 +3,19 @@ package io.microdev.source.widget.panview;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 
 import io.microdev.source.R;
+import io.microdev.source.util.DimenUtil;
 
 public class PanView extends FrameLayout {
 
@@ -20,8 +24,13 @@ public class PanView extends FrameLayout {
     private boolean fillViewportHeight;
     private boolean fillViewportWidth;
 
-    private HorizontalScrollView scrollH;
-    private ScrollView scrollV;
+    private boolean showScrollbarHorizontal;
+    private boolean showScrollbarVertical;
+
+    private HorizontalScrollView scrollViewX;
+    private ScrollView scrollViewY;
+
+    private ScrollbarView scrollbarView;
 
     private boolean isScrollingX;
     private boolean isScrollingY;
@@ -51,7 +60,7 @@ public class PanView extends FrameLayout {
     }
 
     private void initialize() {
-        scrollH = new HorizontalScrollView(getContext()) {
+        scrollViewX = new HorizontalScrollView(getContext()) {
 
             private long timeLastScrollChange;
 
@@ -74,7 +83,7 @@ public class PanView extends FrameLayout {
                 event.offsetLocation(getScrollX() - getLeft(), 0f);
 
                 // Send event to vertical scroll view
-                scrollV.dispatchTouchEvent(event);
+                scrollViewY.dispatchTouchEvent(event);
 
                 // Always consider events handled
                 return true;
@@ -89,10 +98,14 @@ public class PanView extends FrameLayout {
 
                 // Store time of this scroll change
                 timeLastScrollChange = System.nanoTime();
+
+                // Tell the scrollbar view to redraw
+                scrollbarView.postInvalidate();
             }
 
         };
-        scrollV = new ScrollView(getContext()) {
+
+        scrollViewY = new ScrollView(getContext()) {
 
             private long timeLastScrollChange;
 
@@ -116,12 +129,20 @@ public class PanView extends FrameLayout {
 
                 // Store time of this scroll change
                 timeLastScrollChange = System.nanoTime();
+
+                // Tell the scrollbar view to redraw
+                scrollbarView.postInvalidate();
             }
 
         };
 
+        scrollbarView = new ScrollbarView(getContext());
+
         fillViewportHeight = false;
         fillViewportWidth = false;
+
+        showScrollbarHorizontal = true;
+        showScrollbarVertical = true;
     }
 
     private void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -131,21 +152,24 @@ public class PanView extends FrameLayout {
         fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, fillViewportHeight);
         fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, fillViewportWidth);
 
+        showScrollbarHorizontal = styledAttrs.getBoolean(R.styleable.PanView_showScrollbarHorizontal, showScrollbarHorizontal);
+        showScrollbarVertical = styledAttrs.getBoolean(R.styleable.PanView_showScrollbarVertical, showScrollbarVertical);
+
         // Recycle styled attributes array
         styledAttrs.recycle();
     }
 
     private void configure() {
         // Disable native scrollbars
-        scrollH.setHorizontalScrollBarEnabled(false);
-        scrollV.setVerticalScrollBarEnabled(false);
+        scrollViewX.setHorizontalScrollBarEnabled(false);
+        scrollViewY.setVerticalScrollBarEnabled(false);
 
         // Fill viewport for each axis
-        scrollH.setFillViewport(fillViewportWidth);
-        scrollV.setFillViewport(fillViewportHeight);
+        scrollViewX.setFillViewport(fillViewportWidth);
+        scrollViewY.setFillViewport(fillViewportHeight);
     }
 
-    public boolean getFillViewportWidth() {
+    public boolean isFillViewportWidth() {
         return fillViewportWidth;
     }
 
@@ -153,12 +177,28 @@ public class PanView extends FrameLayout {
         this.fillViewportWidth = fillViewportWidth;
     }
 
-    public boolean getFillViewportHeight() {
+    public boolean isFillViewportHeight() {
         return fillViewportHeight;
     }
 
     public void setFillViewportHeight(boolean fillViewportHeight) {
         this.fillViewportHeight = fillViewportHeight;
+    }
+
+    public boolean isShowScrollbarHorizontal() {
+        return showScrollbarHorizontal;
+    }
+
+    public void setShowScrollbarHorizontal(boolean showScrollbarHorizontal) {
+        this.showScrollbarHorizontal = showScrollbarHorizontal;
+    }
+
+    public boolean isShowScrollbarVertical() {
+        return showScrollbarVertical;
+    }
+
+    public void setShowScrollbarVertical(boolean showScrollbarVertical) {
+        this.showScrollbarVertical = showScrollbarVertical;
     }
 
     @Override
@@ -177,9 +217,55 @@ public class PanView extends FrameLayout {
         // Splice scroll views between this view and its child
         View child = getChildAt(0);
         removeAllViews();
-        scrollV.addView(child);
-        scrollH.addView(scrollV);
-        addView(scrollH);
+        scrollViewY.addView(child);
+        scrollViewX.addView(scrollViewY);
+        addView(scrollViewX);
+
+        // Add scrollbar view
+        addView(scrollbarView);
+    }
+
+    private class ScrollbarView extends FrameLayout {
+
+        public ScrollbarView(Context context) {
+            super(context);
+
+            // Expand to whatever we're in
+            setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+            // Transparent background
+            setBackgroundColor(0);
+        }
+
+        @Override
+        public void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+            // Get reference to child
+            View child = scrollViewY.getChildAt(0);
+
+            // Calculate dimensions of horizontal scrollbar
+            float barHorizontalLeft = (float) getWidth() * (float) scrollViewX.getScrollX() / (float) child.getWidth();
+            float barHorizontalTop = (float) getBottom() - DimenUtil.dpToPx(getContext(), 3f);
+            float barHorizontalRight = (float) getWidth() / (float) child.getWidth() * ((float) scrollViewX.getScrollX() + (float) scrollViewX.getWidth());
+            float barHorizontalBottom = (float) getBottom() - DimenUtil.dpToPx(getContext(), 1f);
+
+            // Calculate dimensions of vertical scrollbar
+            float barVerticalLeft = (float) getRight() - DimenUtil.dpToPx(getContext(), 3f);
+            float barVerticalTop = (float) getHeight() * (float) scrollViewY.getScrollY() / (float) child.getHeight();
+            float barVerticalRight = (float) getRight() - DimenUtil.dpToPx(getContext(), 1f);
+            float barVerticalBottom = (float) getHeight() / (float) child.getHeight() * ((float) scrollViewY.getScrollY() + (float) scrollViewY.getHeight());
+
+            // FIXME: Do something with this paint
+            Paint p = new Paint();
+            p.setColor(0);
+            p.setAlpha(127);
+
+            // Draw scrollbars
+            canvas.drawRect(barHorizontalLeft, barHorizontalTop, barHorizontalRight, barHorizontalBottom, p);
+            canvas.drawRect(barVerticalLeft, barVerticalTop, barVerticalRight, barVerticalBottom, p);
+        }
+
     }
 
 }
