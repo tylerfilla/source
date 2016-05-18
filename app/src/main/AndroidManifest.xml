@@ -12,7 +12,32 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".EditActivity">
+        <activity android:name=".EditBinaryActivity">
+
+            <intent-filter>
+
+                <!-- TODO: Remove this filter once the manager activity is developed -->
+
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
+            </intent-filter>
+
+            <intent-filter>
+
+                <!-- Handle files opened from a file browser -->
+
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="file" />
+                <data android:mimeType="*/*" />
+
+            </intent-filter>
+
+        </activity>
+
+        <activity android:name=".EditTextActivity">
 
             <intent-filter>
 
