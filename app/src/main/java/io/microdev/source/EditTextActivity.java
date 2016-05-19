@@ -162,14 +162,16 @@ public class EditTextActivity extends AppCompatActivity {
                 // Perform corresponding action
                 if ("filename".equals(item.getTag())) {
                     promptRenameFile();
+                } else if ("goto".equals(item.getTag())) {
+                    promptFindReplace();
                 } else if ("find".equals(item.getTag())) {
                     promptFindReplace();
                 } else if ("word_wrap".equals(item.getTag())) {
                     setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
-                } else if ("line_numbers".equals(item.getTag())) {
-                    editor.setShowLineNumbers(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
                 } else if ("syntax_highlighting".equals(item.getTag())) {
                     // TODO: Enable/disable syntax highlighting accordingly
+                } else if ("language".equals(item.getTag())) {
+                    // TODO: Allow user to change programming language
                 }
             }
 
@@ -199,24 +201,28 @@ public class EditTextActivity extends AppCompatActivity {
 
                         ((PopupMoreOptionsAdapter.ItemText) item).setText(itemFileNameText);
                     }
+
+                    // TODO: Show/hide contextual items
                 }
             }
 
         });
 
-        // Create "menu" items for popup
+        /* Create items for more options popup */
+
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", getFilename()));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", getString(R.string.popup_activity_edit_text_more_options_goto)));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", getString(R.string.popup_activity_edit_text_more_options_find)));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "word_wrap", getString(R.string.popup_activity_edit_text_more_options_word_wrap), false));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "line_numbers", getString(R.string.popup_activity_edit_text_more_options_line_numbers), true));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "language", getString(R.string.popup_activity_edit_text_more_options_language)));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", getString(R.string.popup_activity_edit_text_more_options_syntax_highlighting), true));
 
-        // Initial data
+        // TODO: Determine if working with code before continuing
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", getString(R.string.popup_activity_edit_text_more_options_syntax_highlighting), true));
+        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "language", getString(R.string.popup_activity_edit_text_more_options_language)));
+
+        // Set initial state
         popupMoreOptionsAdapter.notifyDataSetChanged();
 
         return super.onCreateOptionsMenu(menu);
