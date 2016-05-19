@@ -3,24 +3,17 @@ package io.microdev.source;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ListPopupWindow;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -28,12 +21,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -60,8 +53,7 @@ public class EditTextActivity extends AppCompatActivity {
     private PanView panView;
     private EditorText editor;
 
-    private ListPopupWindow popupMoreOptions;
-    private PopupMoreOptionsAdapter popupMoreOptionsAdapter;
+    private PopupWindow popupMoreOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +112,8 @@ public class EditTextActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate menu
         getMenuInflater().inflate(R.menu.activity_edit_text_opts, menu);
+
+        /*
 
         // Create more options popup
         popupMoreOptions = new ListPopupWindow(this);
@@ -208,8 +202,6 @@ public class EditTextActivity extends AppCompatActivity {
 
         });
 
-        /* Create items for more options popup */
-
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", getFilename()));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
         popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", getString(R.string.popup_activity_edit_text_more_options_goto)));
@@ -224,6 +216,8 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set initial state
         popupMoreOptionsAdapter.notifyDataSetChanged();
+
+        */
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -250,8 +244,8 @@ public class EditTextActivity extends AppCompatActivity {
         case R.id.menuActivityEditTextOptsMoreOptions:
             // More options button pressed
             // Show more options popup
-            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditTextOptsMoreOptions));
-            popupMoreOptions.show();
+            //popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditTextOptsMoreOptions));
+            //popupMoreOptions.show();
             break;
         default:
             // Delegate to super if not handled
@@ -319,11 +313,13 @@ public class EditTextActivity extends AppCompatActivity {
             setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
         }
 
+        /*
         // If more options popup adapter has been constructed
         if (popupMoreOptionsAdapter != null) {
             // Notify it of a dataset change (due to new filename)
             popupMoreOptionsAdapter.notifyDataSetChanged();
         }
+        */
     }
 
     private void setWordWrap(boolean wordWrap) {
