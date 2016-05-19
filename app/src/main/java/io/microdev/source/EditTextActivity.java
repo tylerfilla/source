@@ -193,9 +193,9 @@ public class EditTextActivity extends AppCompatActivity {
                         // Get filename
                         itemFileNameText.append(getFilename());
 
-                        // Embolden and enlarge by 15%
+                        // Embolden and enlarge by 25%
                         itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        itemFileNameText.setSpan(new RelativeSizeSpan(1.15f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        itemFileNameText.setSpan(new RelativeSizeSpan(1.25f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                         ((PopupMoreOptionsAdapter.ItemText) item).setText(itemFileNameText);
                     }
