@@ -5,7 +5,7 @@
     <color name="colorPrimaryDark">#ff455a64</color>
     <color name="colorAccent">#ff4fc3f7</color>
 
-    <color name="activity_edit_editor_colorLineHighlight">#2040c4ff</color>
-    <color name="activity_edit_editor_colorLineNumberColumnBg">#e0e0e0</color>
+    <color name="activity_edit_text_editor_colorLineHighlight">#2040c4ff</color>
+    <color name="activity_edit_text_editor_colorLineNumberColumnBg">#e0e0e0</color>
 
 </resources>

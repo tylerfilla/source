@@ -56,7 +56,7 @@ public class EditBinaryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Set activity layout
-        //setContentView(R.layout.activity_edit_binary);
+        setContentView(R.layout.activity_edit_binary);
 
         // Check if a file URI was passed
         if (getIntent().getData() != null) {
@@ -74,9 +74,8 @@ public class EditBinaryActivity extends AppCompatActivity {
         }
 
         // Find stuff
-        editor = (EditorBinary) findViewById(R.id.activityEditEditor);
-        panView = (PanView) findViewById(R.id.activityEditPanView);
-        appBar = (Toolbar) findViewById(R.id.activityEditAppBar);
+        editor = (EditorBinary) findViewById(R.id.activityEditBinaryEditor);
+        appBar = (Toolbar) findViewById(R.id.activityEditBinaryAppBar);
 
         // Set action bar to custom app bar
         setSupportActionBar(appBar);
@@ -107,7 +106,7 @@ public class EditBinaryActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate menu
-        getMenuInflater().inflate(R.menu.activity_edit_text_opts, menu);
+        getMenuInflater().inflate(R.menu.activity_edit_binary_opts, menu);
 
         // Create more options popup
         popupMoreOptions = new ListPopupWindow(this);
@@ -206,20 +205,20 @@ public class EditBinaryActivity extends AppCompatActivity {
             // Finish activity
             finish();
             break;
-        case R.id.menuActivityEditUndo:
+        case R.id.menuActivityEditBinaryOptsUndo:
             // Undo button pressed
             // Instruct editor to undo last operation
             //editor.undo();
             break;
-        case R.id.menuActivityEditRedo:
+        case R.id.menuActivityEditBinaryOptsRedo:
             // Redo button pressed
             // Instruct editor to redo last operation
             //editor.redo();
             break;
-        case R.id.menuActivityEditMoreOptions:
+        case R.id.menuActivityEditBinaryOptsMoreOptions:
             // More options button pressed
             // Show more options popup
-            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditMoreOptions));
+            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditBinaryOptsMoreOptions));
             popupMoreOptions.show();
             break;
         default:

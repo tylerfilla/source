@@ -4,19 +4,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menuActivityEditTextOptsUndo"
+        android:id="@+id/menuActivityEditBinaryOptsUndo"
         android:icon="@drawable/ic_undo_white_24dp"
         android:title="@string/menu_activity_edit_text_item_undo_title"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuActivityEditTextOptsRedo"
+        android:id="@+id/menuActivityEditBinaryOptsRedo"
         android:icon="@drawable/ic_redo_white_24dp"
         android:title="@string/menu_activity_edit_text_item_redo_title"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuActivityEditTextOptsMoreOptions"
+        android:id="@+id/menuActivityEditBinaryOptsMoreOptions"
         android:icon="@drawable/ic_more_vert_white_24dp"
         android:title="@string/menu_activity_edit_text_item_more_options_title"
         app:showAsAction="always" />

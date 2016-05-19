@@ -86,9 +86,9 @@ public class EditTextActivity extends AppCompatActivity {
         }
 
         // Find stuff
-        editor = (EditorText) findViewById(R.id.activityEditEditor);
-        panView = (PanView) findViewById(R.id.activityEditPanView);
-        appBar = (Toolbar) findViewById(R.id.activityEditAppBar);
+        editor = (EditorText) findViewById(R.id.activityEditTextEditor);
+        panView = (PanView) findViewById(R.id.activityEditTextPanView);
+        appBar = (Toolbar) findViewById(R.id.activityEditTextAppBar);
 
         // Set action bar to custom app bar
         setSupportActionBar(appBar);
@@ -231,20 +231,20 @@ public class EditTextActivity extends AppCompatActivity {
             // Finish activity
             finish();
             break;
-        case R.id.menuActivityEditUndo:
+        case R.id.menuActivityEditTextOptsUndo:
             // Undo button pressed
             // Instruct editor to undo last operation
             editor.undo();
             break;
-        case R.id.menuActivityEditRedo:
+        case R.id.menuActivityEditTextOptsRedo:
             // Redo button pressed
             // Instruct editor to redo last operation
             editor.redo();
             break;
-        case R.id.menuActivityEditMoreOptions:
+        case R.id.menuActivityEditTextOptsMoreOptions:
             // More options button pressed
             // Show more options popup
-            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditMoreOptions));
+            popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditTextOptsMoreOptions));
             popupMoreOptions.show();
             break;
         default:

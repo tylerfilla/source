@@ -3,28 +3,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Activity.Edit.Root"
+    style="@style/Activity.EditText.Root"
     tools:context=".EditTextActivity">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/activityEditAppBar"
-        style="@style/Activity.Edit.AppBar"
+        android:id="@+id/activityEditTextAppBar"
+        style="@style/Activity.EditText.AppBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <io.microdev.source.widget.panview.PanView
-        android:id="@+id/activityEditPanView"
-        style="@style/Activity.Edit.PanView">
+        android:id="@+id/activityEditTextPanView"
+        style="@style/Activity.EditText.PanView">
 
         <io.microdev.source.widget.editortext.EditorText
-            android:id="@+id/activityEditEditor"
-            style="@style/Activity.Edit.Editor" />
+            android:id="@+id/activityEditTextEditor"
+            style="@style/Activity.EditText.Editor" />
 
     </io.microdev.source.widget.panview.PanView>
-
-    <LinearLayout
-        android:id="@+id/activityEditQuickBar"
-        style="@style/Activity.Edit.QuickBar">
-
-    </LinearLayout>
 
 </RelativeLayout>

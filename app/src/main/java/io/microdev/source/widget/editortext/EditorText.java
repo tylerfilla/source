@@ -87,6 +87,14 @@ public class EditorText extends EditText {
         configure();
     }
 
+    public EditorText(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs);
+
+        initialize();
+        handleAttrs(attrs, defStyleAttr, 0);
+        configure();
+    }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public EditorText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs);

@@ -47,6 +47,7 @@
     <string name="operation_activity_edit_text_editor_search_result_snackbar_success_action_next_text">Next</string>
     <string name="operation_activity_edit_text_editor_search_result_snackbar_fail_text">\"%1$s\" was not found</string>
 
+    <!-- Miscellaneous -->
     <string name="_default_file_name">Untitled</string>
 
 </resources>
