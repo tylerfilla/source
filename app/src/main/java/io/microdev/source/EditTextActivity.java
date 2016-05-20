@@ -126,22 +126,30 @@ public class EditTextActivity extends AppCompatActivity {
                 // Measure it
                 contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-                // Recalculate popup width as the next multiple of 56dp (as per Material guidelines)
-                float px56dp = DimenUtil.dpToPx(EditTextActivity.this, 56f);
-                int newWidth = (int) (contentView.getMeasuredWidth() + px56dp - (contentView.getMeasuredWidth() + px56dp) % px56dp);
+                // Convert 56dp to pixels for the calculations that follow
+                float _56dp = DimenUtil.dpToPx(EditTextActivity.this, 56f);
 
-                // Update popup dimensions
-                update(newWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
+                // Get current width
+                int widthCurrent = contentView.getMeasuredWidth();
 
-                // Set widths of all first-level children to match popup
-                for (int i = 0; i < contentView.getChildCount(); i++) {
-                    // Get child
-                    View child = contentView.getChildAt(i);
+                // If popup width is not divisible by 56dp
+                if (widthCurrent % _56dp != 0) {
+                    // Recalculate width as the next multiple of 56dp (as per Material guidelines)
+                    int widthNew = (int) (widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp);
 
-                    // Set child width to popup width
-                    ViewGroup.LayoutParams layoutParams = child.getLayoutParams();
-                    layoutParams.width = newWidth;
-                    child.setLayoutParams(layoutParams);
+                    // Update popup dimensions
+                    update(widthNew, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+                    // Set widths of all first-level children to match popup
+                    for (int i = 0; i < contentView.getChildCount(); i++) {
+                        // Get child
+                        View child = contentView.getChildAt(i);
+
+                        // Set child width to popup width
+                        ViewGroup.LayoutParams layoutParams = child.getLayoutParams();
+                        layoutParams.width = widthNew;
+                        child.setLayoutParams(layoutParams);
+                    }
                 }
             }
 
@@ -213,6 +221,10 @@ public class EditTextActivity extends AppCompatActivity {
         } else {
             super.finish();
         }
+    }
+
+    public void onMoreOptsPopupItemSelected(View item) {
+        System.out.println("clicked " + item);
     }
 
     private String getFilename() {
