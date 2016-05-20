@@ -59,7 +59,9 @@
         <item name="android:paddingBottom">6dp</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingRight">16dp</item>
+        <item name="android:singleLine">true</item>
         <item name="android:textAppearance">?attr/textAppearanceSmallPopupMenu</item>
+        <item name="android:tag">text</item>
     </style>
 
     <style name="Activity.EditText.MoreOptsPopup.Item.Separator" parent="">

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -14,7 +15,11 @@ import android.support.v7.widget.AppCompatPopupWindow;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -29,6 +34,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -106,6 +112,9 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Retrieve filename
         filename = savedInstanceState.getString("filename");
+
+        // Set filename
+        setFilename(filename);
     }
 
     @Override
@@ -117,40 +126,55 @@ public class EditTextActivity extends AppCompatActivity {
         popupMoreOptions = new AppCompatPopupWindow(this, null, android.support.v7.appcompat.R.attr.popupMenuStyle) {
 
             @Override
-            public void showAsDropDown(View anchor) {
-                super.showAsDropDown(anchor);
-
+            public void update() {
                 // Get popup content view
                 ViewGroup contentView = (ViewGroup) getContentView();
 
-                // Measure it
-                contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                /* Update dynamic content */
 
-                // Convert 56dp to pixels for the calculations that follow
-                float _56dp = DimenUtil.dpToPx(EditTextActivity.this, 56f);
+                // Get more options popup filename item
+                ViewGroup itemFilename = (ViewGroup) contentView.findViewById(R.id.activityEditTextMoreOptsPopupItemFilename);
+
+                // Get filename item text view
+                TextView itemFilenameText = (TextView) itemFilename.findViewWithTag("text");
+
+                // Build new content for text view
+                SpannableStringBuilder itemFilenameTextContent = new SpannableStringBuilder();
+                itemFilenameTextContent.append(filename);
+                itemFilenameTextContent.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                itemFilenameTextContent.setSpan(new RelativeSizeSpan(1.2f), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                // Set as item text
+                itemFilenameText.setText(itemFilenameTextContent);
+
+                /* Resize window in a Material-ish fashion */
+
+                // Measure content view
+                contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
                 // Get current width
                 int widthCurrent = contentView.getMeasuredWidth();
 
+                // Convert 56dp to pixels for the calculations that follow
+                int _56dp = (int) DimenUtil.dpToPx(EditTextActivity.this, 56f);
+
                 // If popup width is not divisible by 56dp
                 if (widthCurrent % _56dp != 0) {
                     // Recalculate width as the next multiple of 56dp (as per Material guidelines)
-                    int widthNew = (int) (widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp);
+                    int widthNew = widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp;
 
-                    // Update popup dimensions
-                    update(widthNew, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    // Update popup width
+                    setWidth(widthNew);
 
-                    // Set widths of all first-level children to match popup
+                    // Set widths of all first-level children to explicitly match popup
                     for (int i = 0; i < contentView.getChildCount(); i++) {
-                        // Get child
-                        View child = contentView.getChildAt(i);
-
-                        // Set child width to popup width
-                        ViewGroup.LayoutParams layoutParams = child.getLayoutParams();
-                        layoutParams.width = widthNew;
-                        child.setLayoutParams(layoutParams);
+                        // Set minimum width of child
+                        contentView.getChildAt(i).setMinimumWidth(widthNew);
                     }
                 }
+
+                // Continue with standard update procedure
+                super.update();
             }
 
         };
@@ -167,6 +191,9 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Make outside touchable to dismiss popup when touching outside its window
         popupMoreOptions.setOutsideTouchable(true);
+
+        // Initial update
+        popupMoreOptions.update();
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -224,7 +251,27 @@ public class EditTextActivity extends AppCompatActivity {
     }
 
     public void onMoreOptsPopupItemSelected(View item) {
-        System.out.println("clicked " + item);
+        // Dismiss the popup
+        popupMoreOptions.dismiss();
+
+        // Switch against item ID to try to handle it
+        switch (item.getId()) {
+        case R.id.activityEditTextMoreOptsPopupItemFilename:
+            // Filename item selected
+            // Enter rename prompt sequence
+            promptRenameFile();
+            break;
+        case R.id.activityEditTextMoreOptsPopupItemGoto:
+            // Goto item selected
+            // TODO: Not implemented
+            Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show();
+            break;
+        case R.id.activityEditTextMoreOptsPopupItemFind:
+            // Find item selected
+            // Enter find and replace sequence
+            promptFindReplace();
+            break;
+        }
     }
 
     private String getFilename() {
@@ -247,7 +294,27 @@ public class EditTextActivity extends AppCompatActivity {
         // Set app bar title
         appBar.setTitle(filename);
 
-        // Handle task descriptions on Lollipop+
+        // Update task description
+        updateTaskDescription();
+
+        // Update more options popup
+        if (popupMoreOptions != null) {
+            popupMoreOptions.update();
+        }
+    }
+
+    private void setWordWrap(boolean wordWrap) {
+        if (wordWrap) {
+            // Limit editor width to screen width
+            editor.setMaxWidth(findViewById(android.R.id.content).getWidth());
+        } else {
+            // Maximize max width
+            editor.setMaxWidth(Integer.MAX_VALUE);
+        }
+    }
+
+    private void updateTaskDescription() {
+        // Handle task descriptions only on Lollipop and up
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Resolve app icon
             Bitmap icon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
@@ -262,25 +329,7 @@ public class EditTextActivity extends AppCompatActivity {
             }
 
             // Set task description
-            setTaskDescription(new ActivityManager.TaskDescription(getSupportActionBar().getTitle().toString(), icon, colorPrimary));
-        }
-
-        /*
-        // If more options popup adapter has been constructed
-        if (popupMoreOptionsAdapter != null) {
-            // Notify it of a dataset change (due to new filename)
-            popupMoreOptionsAdapter.notifyDataSetChanged();
-        }
-        */
-    }
-
-    private void setWordWrap(boolean wordWrap) {
-        if (wordWrap) {
-            // Limit editor width to screen width
-            editor.setMaxWidth(findViewById(android.R.id.content).getWidth());
-        } else {
-            // Maximize max width
-            editor.setMaxWidth(Integer.MAX_VALUE);
+            setTaskDescription(new ActivityManager.TaskDescription(getTitle().toString(), icon, colorPrimary));
         }
     }
 
@@ -312,7 +361,7 @@ public class EditTextActivity extends AppCompatActivity {
         editTextName.setText(filename);
         editTextName.setHint(filename);
         editTextName.setSingleLine();
-        editTextName.selectAll();
+        editTextName.setSelectAllOnFocus(true);
 
         // Set margins for name input
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -349,8 +398,10 @@ public class EditTextActivity extends AppCompatActivity {
 
             @Override
             public void onShow(DialogInterface dialogInterface) {
-                // Show the soft keyboard
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(editTextName, InputMethodManager.SHOW_IMPLICIT);
+                // Focus name input and show the soft keyboard
+                if (editTextName.requestFocus()) {
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(editTextName, InputMethodManager.SHOW_IMPLICIT);
+                }
             }
 
         });
@@ -509,8 +560,10 @@ public class EditTextActivity extends AppCompatActivity {
 
             @Override
             public void onShow(DialogInterface dialogInterface) {
-                // Show the soft keyboard
-                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showSoftInput(inputSearch, InputMethodManager.SHOW_IMPLICIT);
+                // Focus search input and show the soft keyboard
+                if (inputSearch.requestFocus()) {
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(inputSearch, InputMethodManager.SHOW_IMPLICIT);
+                }
             }
 
         });
