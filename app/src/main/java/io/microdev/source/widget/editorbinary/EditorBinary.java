@@ -7,9 +7,14 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.EditText;
 
+import java.io.Reader;
+
 import io.microdev.source.R;
 
 public class EditorBinary extends EditText {
+
+    private Reader reader;
+    private Swapper swapper;
 
     public EditorBinary(Context context) {
         super(context);
@@ -44,6 +49,7 @@ public class EditorBinary extends EditText {
     }
 
     public void initialize() {
+        reader = null;
     }
 
     public void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -57,6 +63,36 @@ public class EditorBinary extends EditText {
     }
 
     public void configure() {
+    }
+
+    public Reader getReader() {
+        return reader;
+    }
+
+    public void setReader(Reader reader) {
+        this.reader = reader;
+    }
+
+    public Swapper getSwapper() {
+        return swapper;
+    }
+
+    public void setSwapper(Swapper swapper) {
+        this.swapper = swapper;
+    }
+
+    public interface Swapper {
+
+        Block in(BlockId blockId);
+
+        BlockId out(Block block);
+
+    }
+
+    public class Block {
+    }
+
+    public class BlockId {
     }
 
 }
