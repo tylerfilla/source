@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatPopupWindow;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -26,7 +27,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -53,7 +53,7 @@ public class EditTextActivity extends AppCompatActivity {
     private PanView panView;
     private EditorText editor;
 
-    private PopupWindow popupMoreOptions;
+    private AppCompatPopupWindow popupMoreOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,114 +110,55 @@ public class EditTextActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate menu
+        // Inflate options menu
         getMenuInflater().inflate(R.menu.activity_edit_text_opts, menu);
 
-        /*
-
-        // Create more options popup
-        popupMoreOptions = new ListPopupWindow(this);
-
-        // Create and set popup adapter
-        popupMoreOptionsAdapter = new PopupMoreOptionsAdapter(this);
-        popupMoreOptions.setAdapter(popupMoreOptionsAdapter);
-
-        // FIXME: Generalize width computation
-        popupMoreOptions.setWidth((int) DimenUtil.dpToPx(this, 288f));
-
-        // Offset popup from corner
-        popupMoreOptions.setHorizontalOffset((int) -DimenUtil.dpToPx(this, 8f));
-        popupMoreOptions.setVerticalOffset(-appBar.getHeight() + (int) DimenUtil.dpToPx(this, 8f));
-
-        // Show above keyboard, if applicable
-        popupMoreOptions.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NOT_NEEDED);
-
-        // Listen for clicks
-        popupMoreOptions.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        // Create more options popup window
+        popupMoreOptions = new AppCompatPopupWindow(this, null, android.support.v7.appcompat.R.attr.popupMenuStyle) {
 
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                PopupMoreOptionsAdapter adapter = (PopupMoreOptionsAdapter) adapterView.getAdapter();
+            public void showAsDropDown(View anchor) {
+                super.showAsDropDown(anchor);
 
-                // Send click notice to adapter
-                adapter.handleItemClick(i);
+                // Get popup content view
+                ViewGroup contentView = (ViewGroup) getContentView();
 
-                // Dismiss popup
-                popupMoreOptions.dismiss();
-            }
+                // Measure it
+                contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-        });
+                // Recalculate popup width as the next multiple of 56dp (as per Material guidelines)
+                float px56dp = DimenUtil.dpToPx(EditTextActivity.this, 56f);
+                int newWidth = (int) (contentView.getMeasuredWidth() + px56dp - (contentView.getMeasuredWidth() + px56dp) % px56dp);
 
-        // Listen for item actions
-        popupMoreOptionsAdapter.addOnItemActionListener(new PopupMoreOptionsAdapter.OnItemActionListener() {
+                // Update popup dimensions
+                update(newWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            @Override
-            public void onItemAction(PopupMoreOptionsAdapter.Item item) {
-                // Perform corresponding action
-                if ("filename".equals(item.getTag())) {
-                    promptRenameFile();
-                } else if ("goto".equals(item.getTag())) {
-                    promptFindReplace();
-                } else if ("find".equals(item.getTag())) {
-                    promptFindReplace();
-                } else if ("word_wrap".equals(item.getTag())) {
-                    setWordWrap(((PopupMoreOptionsAdapter.ItemSwitch) item).getState());
-                } else if ("syntax_highlighting".equals(item.getTag())) {
-                    // TODO: Enable/disable syntax highlighting accordingly
-                } else if ("language".equals(item.getTag())) {
-                    // TODO: Allow user to change programming language
+                // Set widths of all first-level children to match popup
+                for (int i = 0; i < contentView.getChildCount(); i++) {
+                    // Get child
+                    View child = contentView.getChildAt(i);
+
+                    // Set child width to popup width
+                    ViewGroup.LayoutParams layoutParams = child.getLayoutParams();
+                    layoutParams.width = newWidth;
+                    child.setLayoutParams(layoutParams);
                 }
             }
 
-        });
+        };
 
-        // Get adapter list
-        final List<PopupMoreOptionsAdapter.Item> popupMoreOptionsAdapterList = popupMoreOptionsAdapter.getList();
+        // Inflate more options popup content layout
+        popupMoreOptions.setContentView(getLayoutInflater().inflate(R.layout.activity_edit_text_more_opts_popup, null));
 
-        // Observe dataset changes
-        popupMoreOptionsAdapter.registerDataSetObserver(new DataSetObserver() {
+        // Height and width wrap content
+        popupMoreOptions.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        popupMoreOptions.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            @Override
-            public void onChanged() {
-                super.onChanged();
+        // Overlap the more options button
+        popupMoreOptions.setSupportOverlapAnchor(true);
 
-                // Iterate over items to update them
-                for (PopupMoreOptionsAdapter.Item item : popupMoreOptionsAdapterList) {
-                    if ("filename".equals(item.getTag())) {
-                        SpannableStringBuilder itemFileNameText = new SpannableStringBuilder();
-
-                        // Get filename
-                        itemFileNameText.append(getFilename());
-
-                        // Embolden and enlarge by 25%
-                        itemFileNameText.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        itemFileNameText.setSpan(new RelativeSizeSpan(1.25f), 0, itemFileNameText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        ((PopupMoreOptionsAdapter.ItemText) item).setText(itemFileNameText);
-                    }
-
-                    // TODO: Show/hide contextual items
-                }
-            }
-
-        });
-
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "filename", getFilename()));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "goto", getString(R.string.popup_activity_edit_text_more_options_goto)));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "find", getString(R.string.popup_activity_edit_text_more_options_find)));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "word_wrap", getString(R.string.popup_activity_edit_text_more_options_word_wrap), false));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSeparator(popupMoreOptionsAdapter, null));
-
-        // TODO: Determine if working with code before continuing
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemSwitch(popupMoreOptionsAdapter, "syntax_highlighting", getString(R.string.popup_activity_edit_text_more_options_syntax_highlighting), true));
-        popupMoreOptionsAdapterList.add(new PopupMoreOptionsAdapter.ItemText(popupMoreOptionsAdapter, "language", getString(R.string.popup_activity_edit_text_more_options_language)));
-
-        // Set initial state
-        popupMoreOptionsAdapter.notifyDataSetChanged();
-
-        */
+        // Make outside touchable to dismiss popup when touching outside its window
+        popupMoreOptions.setOutsideTouchable(true);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -243,9 +184,8 @@ public class EditTextActivity extends AppCompatActivity {
             break;
         case R.id.menuActivityEditTextOptsMoreOptions:
             // More options button pressed
-            // Show more options popup
-            //popupMoreOptions.setAnchorView(findViewById(R.id.menuActivityEditTextOptsMoreOptions));
-            //popupMoreOptions.show();
+            // Show more options popup anchored to more options button
+            popupMoreOptions.showAsDropDown(findViewById(R.id.menuActivityEditTextOptsMoreOptions));
             break;
         default:
             // Delegate to super if not handled

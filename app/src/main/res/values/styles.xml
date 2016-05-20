@@ -34,6 +34,39 @@
         <item name="android:layout_width">match_parent</item>
     </style>
 
+    <style name="Activity.EditText.MoreOptsPopup.Root" parent="">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingTop">8dp</item>
+    </style>
+
+    <style name="Activity.EditText.MoreOptsPopup.Item" parent="">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="Activity.EditText.MoreOptsPopup.Item.Text" parent="">
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceSmallPopupMenu</item>
+    </style>
+
+    <style name="Activity.EditText.MoreOptsPopup.Item.Separator" parent="">
+        <item name="android:background">#18000000</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
     <style name="Activity.EditText.AppBar" parent="">
         <item name="android:background">?attr/colorPrimary</item>
         <item name="android:elevation" tools:targetApi="21">@dimen/activity_edit_text_appbar_elevation</item>
