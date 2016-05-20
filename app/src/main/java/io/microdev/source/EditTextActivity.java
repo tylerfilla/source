@@ -149,6 +149,11 @@ public class EditTextActivity extends AppCompatActivity {
 
                 /* Resize window in a Material-ish fashion */
 
+                // Set minimum widths of all first-level children to zero
+                for (int i = 0; i < contentView.getChildCount(); i++) {
+                    contentView.getChildAt(i).setMinimumWidth(0);
+                }
+
                 // Measure content view
                 contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
@@ -166,9 +171,8 @@ public class EditTextActivity extends AppCompatActivity {
                     // Update popup width
                     setWidth(widthNew);
 
-                    // Set widths of all first-level children to explicitly match popup
+                    // Set minimum widths of all first-level children to explicitly match popup
                     for (int i = 0; i < contentView.getChildCount(); i++) {
-                        // Set minimum width of child
                         contentView.getChildAt(i).setMinimumWidth(widthNew);
                     }
                 }
