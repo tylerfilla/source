@@ -443,29 +443,21 @@ public class EditTextActivity extends AppCompatActivity {
         displayDialogFindReplace(new Callback<DialogResultFindReplace>() {
 
             @Override
-            public void ring(DialogResultFindReplace result) {
-                // If a replacement is being made
-                if (result.isEnableReplace()) {
-                    // Perform replace
-                    findInEditor(result.getSearch(), 0, false, !result.isEnableMatchCase(), new Callback<Integer>() {
+            public void ring(final DialogResultFindReplace result) {
+                // Find occurrences in editor
+                findInEditor(result.getSearch(), 0, false, !result.isEnableMatchCase(), new Callback<Integer>() {
 
-                        @Override
-                        public void ring(Integer index) {
-                            // TODO: Perform replacement at this index
+                    @Override
+                    public void ring(Integer index) {
+                        // If a replacement is being made
+                        if (result.isEnableReplace()) {
+                            // TODO: Perform replace
+                        } else {
+                            // TODO: Perform find
                         }
+                    }
 
-                    });
-                } else {
-                    // Perform find
-                    findInEditor(result.getSearch(), 0, false, !result.isEnableMatchCase(), new Callback<Integer>() {
-
-                        @Override
-                        public void ring(Integer index) {
-
-                        }
-
-                    });
-                }
+                });
             }
 
         });
