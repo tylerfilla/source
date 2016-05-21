@@ -2,6 +2,7 @@
   <dictionary name="tyler">
     <words>
       <w>linefeeds</w>
+      <w>swappables</w>
     </words>
   </dictionary>
 </component>

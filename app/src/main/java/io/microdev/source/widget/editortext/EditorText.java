@@ -354,7 +354,7 @@ public class EditorText extends EditText {
             int l = 1;
             for (int i = 0; i < getLineCount(); i++) {
                 // Determine if line should be numbered
-                if (i == 0 || getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) { // FIXME: e.g. IndexOutOfBoundsException: getChars (x ... y) ends beyond length z
+                if (i == 0 || getText().subSequence(layout.getLineVisibleEnd(i - 1), layout.getLineEnd(i - 1)).toString().contains("\n")) {
                     // Get Y coordinates of line's vertical bounds
                     float lineTop = layout.getLineTop(i) + getPaddingTop();
                     float lineBottom = layout.getLineBottom(i) + getPaddingTop();
