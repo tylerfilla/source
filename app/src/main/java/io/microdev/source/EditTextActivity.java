@@ -169,6 +169,10 @@ public class EditTextActivity extends AppCompatActivity {
         // Inflate find and replace context menu
         popupContextFindReplace.setContentView(getLayoutInflater().inflate(R.layout.activity_edit_text_context_find_replace_popup, null));
 
+        // Height and width wrap content
+        popupContextFindReplace.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        popupContextFindReplace.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+
         // Make outside touchable to dismiss popup when touching outside its window
         popupContextFindReplace.setOutsideTouchable(true);
 
@@ -610,30 +614,14 @@ public class EditTextActivity extends AppCompatActivity {
                             }
 
                             // Show next button if a valid occurrence follows, else hide it
-                            boolean validFollows = false;
-                            for (int i = resultFind.getOccurrenceCurrent(); i < resultFind.getOccurrenceTotal(); i++) {
-                                if (i == resultFind.getOccurrenceCurrent()) {
-                                    continue;
-                                }
-
-                                validFollows = validFollows || resultFind.getOccurenceValid(i);
-                            }
-                            if (validFollows) {
+                            if (resultFind.getNextValidForward() != -1) {
                                 buttonNext.setVisibility(View.VISIBLE);
                             } else {
                                 buttonNext.setVisibility(View.GONE);
                             }
 
                             // Show previous button if a valid occurrence precedes, else hide it
-                            boolean validPrecedes = false;
-                            for (int i = resultFind.getOccurrenceCurrent(); i >= 0; i--) {
-                                if (i == resultFind.getOccurrenceCurrent()) {
-                                    continue;
-                                }
-
-                                validPrecedes = validPrecedes || resultFind.getOccurenceValid(i);
-                            }
-                            if (validPrecedes) {
+                            if (resultFind.getNextValidBackward() != -1) {
                                 buttonPrevious.setVisibility(View.VISIBLE);
                             } else {
                                 buttonPrevious.setVisibility(View.GONE);
@@ -975,7 +963,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Notify caller if no occurrences were found with an invalid result
         if (occurrenceOffsetList.isEmpty()) {
-            callback.ring(new ResultFindInEditor(-1, offset, occurrenceOffsetList.size()));
+            callback.ring(ResultFindInEditor.buildInvalidReference(occurrenceOffsetList.size()));
             return;
         }
 
@@ -983,7 +971,18 @@ public class EditTextActivity extends AppCompatActivity {
         final int[] i = new int[] { 0 };
 
         // Create result to represent first occurrence
-        ResultFindInEditor resultFirst = new ResultFindInEditor(occurrenceOffsetList.get(i[0]), i[0], occurrenceOffsetList.size());
+        ResultFindInEditor resultFirst = new ResultFindInEditor();
+
+        // Configure first result
+        resultFirst.setOffset(occurrenceOffsetList.get(i[0]));
+        resultFirst.setOccurrenceCurrent(i[0]);
+        resultFirst.setOccurrenceTotal(occurrenceOffsetList.size());
+
+        // If more than one occurrence found
+        if (occurrenceOffsetList.size() > 1) {
+            // Next valid forward occurrence is adjacent in forward direction
+            resultFirst.setNextValidForward(1);
+        }
 
         // Create callback to receive first response
         resultFirst.setResponseCallback(new Callback<ResultFindInEditor.Response>() {
@@ -1038,7 +1037,7 @@ public class EditTextActivity extends AppCompatActivity {
                     // Mark this offset as invalid (replaced) without affecting other occurrences
                     occurrenceOffsetList.set(i[0], -1);
 
-                    // Shift following occurrences by difference due to replacement
+                    // Shift following valid occurrences by difference due to replacement
                     for (int j = i[0]; j < occurrenceOffsetList.size(); j++) {
                         // Skip current
                         if (j == i[0]) {
@@ -1046,7 +1045,9 @@ public class EditTextActivity extends AppCompatActivity {
                         }
 
                         // For replacements, the payload is the difference between new and old lengths
-                        occurrenceOffsetList.set(j, occurrenceOffsetList.get(j) + (int) response.getPayload());
+                        if (occurrenceOffsetList.get(j) != -1) {
+                            occurrenceOffsetList.set(j, occurrenceOffsetList.get(j) + (int) response.getPayload());
+                        }
                     }
 
                     // Move to next valid occurrence (try forward, then backward)
@@ -1055,8 +1056,8 @@ public class EditTextActivity extends AppCompatActivity {
                     } else if (nextValidBackward != -1) {
                         i[0] = nextValidBackward;
                     } else {
-                        // Reached end of replacements; notify caller with invalid result
-                        callback.ring(new ResultFindInEditor(-1, i[0], occurrenceOffsetList.size()));
+                        // Notify caller of end of occurrences
+                        callback.ring(ResultFindInEditor.buildInvalidReference(occurrenceOffsetList.size()));
                         return;
                     }
                     break;
@@ -1070,8 +1071,53 @@ public class EditTextActivity extends AppCompatActivity {
                     break;
                 }
 
+                // Search forward again for next valid occurrence
+                searchForward = i[0];
+                while (true) {
+                    // Increment iterator
+                    searchForward++;
+
+                    // If we hit upper boundary
+                    if (searchForward > occurrenceOffsetList.size() - 1) {
+                        nextValidForward = -1;
+                        break;
+                    }
+
+                    // If this is a valid occurrence
+                    if (occurrenceOffsetList.get(searchForward) != -1) {
+                        nextValidForward = searchForward;
+                        break;
+                    }
+                }
+
+                // Search backward again for next valid occurrence
+                searchBackward = i[0];
+                while (true) {
+                    // Decrement iterator
+                    searchBackward--;
+
+                    // If we hit lower boundary
+                    if (searchBackward < 0) {
+                        nextValidBackward = -1;
+                        break;
+                    }
+
+                    // If this is a valid occurrence
+                    if (occurrenceOffsetList.get(searchBackward) != -1) {
+                        nextValidBackward = searchBackward;
+                        break;
+                    }
+                }
+
                 // Prepare next result
-                ResultFindInEditor resultNext = new ResultFindInEditor(occurrenceOffsetList.get(i[0]), i[0], occurrenceOffsetList.size());
+                ResultFindInEditor resultNext = new ResultFindInEditor();
+
+                // Configure result
+                resultNext.setOffset(occurrenceOffsetList.get(i[0]));
+                resultNext.setOccurrenceCurrent(i[0]);
+                resultNext.setOccurrenceTotal(occurrenceOffsetList.size());
+                resultNext.setNextValidBackward(nextValidBackward);
+                resultNext.setNextValidForward(nextValidForward);
 
                 // Iterate over occurrences
                 for (int i = 0; i < occurrenceOffsetList.size(); i++) {
@@ -1098,22 +1144,20 @@ public class EditTextActivity extends AppCompatActivity {
         private int occurrenceCurrent;
         private int occurrenceTotal;
 
+        private int nextValidBackward;
+        private int nextValidForward;
+
         private Map<Integer, Boolean> validityMap;
 
         private Callback<Response> responseCallback;
 
         public ResultFindInEditor() {
             offset = -1;
-            occurrenceCurrent = 0;
+            occurrenceCurrent = -1;
             occurrenceTotal = 0;
 
-            validityMap = new HashMap<>();
-        }
-
-        public ResultFindInEditor(int offset, int occurrenceCurrent, int occurrenceTotal) {
-            this.offset = offset;
-            this.occurrenceCurrent = occurrenceCurrent;
-            this.occurrenceTotal = occurrenceTotal;
+            nextValidBackward = -1;
+            nextValidForward = -1;
 
             validityMap = new HashMap<>();
         }
@@ -1122,12 +1166,40 @@ public class EditTextActivity extends AppCompatActivity {
             return offset;
         }
 
+        public void setOffset(int offset) {
+            this.offset = offset;
+        }
+
         public int getOccurrenceCurrent() {
             return occurrenceCurrent;
         }
 
+        public void setOccurrenceCurrent(int occurrenceCurrent) {
+            this.occurrenceCurrent = occurrenceCurrent;
+        }
+
         public int getOccurrenceTotal() {
             return occurrenceTotal;
+        }
+
+        public void setOccurrenceTotal(int occurrenceTotal) {
+            this.occurrenceTotal = occurrenceTotal;
+        }
+
+        public int getNextValidBackward() {
+            return nextValidBackward;
+        }
+
+        public void setNextValidBackward(int nextValidBackward) {
+            this.nextValidBackward = nextValidBackward;
+        }
+
+        public int getNextValidForward() {
+            return nextValidForward;
+        }
+
+        public void setNextValidForward(int nextValidForward) {
+            this.nextValidForward = nextValidForward;
         }
 
         public boolean getOccurenceValid(int index) {
@@ -1152,6 +1224,15 @@ public class EditTextActivity extends AppCompatActivity {
 
         public void dispatchResponse(Response response) {
             responseCallback.ring(response);
+        }
+
+        public static ResultFindInEditor buildInvalidReference(int occurrenceTotal) {
+            ResultFindInEditor result = new ResultFindInEditor();
+
+            result.setOffset(-1);
+            result.setOccurrenceTotal(occurrenceTotal);
+
+            return result;
         }
 
         public static class Response {
