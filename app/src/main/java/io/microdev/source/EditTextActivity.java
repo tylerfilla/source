@@ -644,10 +644,11 @@ public class EditTextActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onClick(View v) {
-                                    // TODO: Replace text
+                                    // Replace text
+                                    editor.getText().replace(findReplaceSelectionStart, findReplaceSelectionEnd, resultDialog.getReplace());
 
                                     // Replace occurrence
-                                    resultFind.dispatchResponse(ResultFindInEditor.Response.REPLACE);
+                                    resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.REPLACE, resultDialog.getReplace().length() - resultDialog.getSearch().length()));
                                 }
 
                             });
@@ -658,7 +659,7 @@ public class EditTextActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(View v) {
                                     // Move to next occurrence
-                                    resultFind.dispatchResponse(ResultFindInEditor.Response.NEXT);
+                                    resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.NEXT, null));
                                 }
 
                             });
@@ -669,7 +670,7 @@ public class EditTextActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(View v) {
                                     // Move to previous occurrence
-                                    resultFind.dispatchResponse(ResultFindInEditor.Response.PREVIOUS);
+                                    resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.PREVIOUS, null));
                                 }
 
                             });
@@ -684,6 +685,7 @@ public class EditTextActivity extends AppCompatActivity {
                             // Select occurrence text
                             editor.setSelection(offset, offset + resultDialog.getSearch().length());
 
+                            // Show find and replace popup
                             showPopupContextFindReplace();
                         }
                     }
@@ -959,21 +961,21 @@ public class EditTextActivity extends AppCompatActivity {
         }
 
         // List to store occurrence indices
-        final List<Integer> occurrenceIndexList = new ArrayList<>();
+        final List<Integer> occurrenceOffsetList = new ArrayList<>();
 
         // Iterate over occurrences
         int offset = start;
         while ((offset = reverse ? text.lastIndexOf(search, offset) : text.indexOf(search, offset)) > -1) {
             // Store occurrence index
-            occurrenceIndexList.add(offset);
+            occurrenceOffsetList.add(offset);
 
             // Start next search from the next character
             offset += reverse ? -1 : 1;
         }
 
         // Notify caller if no occurrences were found with an invalid result
-        if (occurrenceIndexList.isEmpty()) {
-            callback.ring(new ResultFindInEditor(-1, offset, occurrenceIndexList.size()));
+        if (occurrenceOffsetList.isEmpty()) {
+            callback.ring(new ResultFindInEditor(-1, offset, occurrenceOffsetList.size()));
             return;
         }
 
@@ -981,7 +983,7 @@ public class EditTextActivity extends AppCompatActivity {
         final int[] i = new int[] { 0 };
 
         // Create result to represent first occurrence
-        ResultFindInEditor resultFirst = new ResultFindInEditor(occurrenceIndexList.get(i[0]), i[0], occurrenceIndexList.size());
+        ResultFindInEditor resultFirst = new ResultFindInEditor(occurrenceOffsetList.get(i[0]), i[0], occurrenceOffsetList.size());
 
         // Create callback to receive first response
         resultFirst.setResponseCallback(new Callback<ResultFindInEditor.Response>() {
@@ -999,13 +1001,13 @@ public class EditTextActivity extends AppCompatActivity {
                     searchForward++;
 
                     // If we hit upper boundary
-                    if (searchForward > occurrenceIndexList.size() - 1) {
+                    if (searchForward > occurrenceOffsetList.size() - 1) {
                         nextValidForward = -1;
                         break;
                     }
 
                     // If this is a valid occurrence
-                    if (occurrenceIndexList.get(searchForward) != -1) {
+                    if (occurrenceOffsetList.get(searchForward) != -1) {
                         nextValidForward = searchForward;
                         break;
                     }
@@ -1024,17 +1026,28 @@ public class EditTextActivity extends AppCompatActivity {
                     }
 
                     // If this is a valid occurrence
-                    if (occurrenceIndexList.get(searchBackward) != -1) {
+                    if (occurrenceOffsetList.get(searchBackward) != -1) {
                         nextValidBackward = searchBackward;
                         break;
                     }
                 }
 
                 // Switch against response
-                switch (response) {
+                switch (response.getType()) {
                 case REPLACE:
-                    // Mark this index as invalid (replaced) without shifting occurrences
-                    occurrenceIndexList.set(i[0], -1);
+                    // Mark this offset as invalid (replaced) without affecting other occurrences
+                    occurrenceOffsetList.set(i[0], -1);
+
+                    // Shift following occurrences by difference due to replacement
+                    for (int j = i[0]; j < occurrenceOffsetList.size(); j++) {
+                        // Skip current
+                        if (j == i[0]) {
+                            continue;
+                        }
+
+                        // For replacements, the payload is the difference between new and old lengths
+                        occurrenceOffsetList.set(j, occurrenceOffsetList.get(j) + (int) response.getPayload());
+                    }
 
                     // Move to next valid occurrence (try forward, then backward)
                     if (nextValidForward != -1) {
@@ -1043,7 +1056,7 @@ public class EditTextActivity extends AppCompatActivity {
                         i[0] = nextValidBackward;
                     } else {
                         // Reached end of replacements; notify caller with invalid result
-                        callback.ring(new ResultFindInEditor(-1, i[0], occurrenceIndexList.size()));
+                        callback.ring(new ResultFindInEditor(-1, i[0], occurrenceOffsetList.size()));
                         return;
                     }
                     break;
@@ -1058,12 +1071,12 @@ public class EditTextActivity extends AppCompatActivity {
                 }
 
                 // Prepare next result
-                ResultFindInEditor resultNext = new ResultFindInEditor(occurrenceIndexList.get(i[0]), i[0], occurrenceIndexList.size());
+                ResultFindInEditor resultNext = new ResultFindInEditor(occurrenceOffsetList.get(i[0]), i[0], occurrenceOffsetList.size());
 
                 // Iterate over occurrences
-                for (int i = 0; i < occurrenceIndexList.size(); i++) {
+                for (int i = 0; i < occurrenceOffsetList.size(); i++) {
                     // Flag each occurrence as either valid or invalid
-                    resultNext.setOccurrenceValid(i, occurrenceIndexList.get(i) != -1);
+                    resultNext.setOccurrenceValid(i, occurrenceOffsetList.get(i) != -1);
                 }
 
                 // Use this same callback for next result, enabling recursive iteration
@@ -1141,11 +1154,31 @@ public class EditTextActivity extends AppCompatActivity {
             responseCallback.ring(response);
         }
 
-        public enum Response {
+        public static class Response {
 
-            REPLACE,
-            NEXT,
-            PREVIOUS
+            private Type type;
+            private Object payload;
+
+            public Response(Type type, Object payload) {
+                this.type = type;
+                this.payload = payload;
+            }
+
+            public Type getType() {
+                return type;
+            }
+
+            public Object getPayload() {
+                return payload;
+            }
+
+            public enum Type {
+
+                REPLACE,
+                NEXT,
+                PREVIOUS
+
+            }
 
         }
 
