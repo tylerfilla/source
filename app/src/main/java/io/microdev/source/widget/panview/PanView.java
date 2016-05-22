@@ -12,6 +12,9 @@ import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import io.microdev.source.R;
 
 public class PanView extends FrameLayout {
@@ -29,8 +32,19 @@ public class PanView extends FrameLayout {
 
     private ScrollbarLens scrollbarLens;
 
+    private long timeLastScrollChangeX;
+    private long timeLastScrollChangeY;
+
     private boolean isScrollingX;
     private boolean isScrollingY;
+
+    private int oldScrollX;
+    private int oldScrollY;
+
+    private OnPanChangeListener panChangeListener;
+    private OnPanStopListener panStopListener;
+
+    private Timer timerWatchThing;
 
     public PanView(Context context) {
         super(context);
@@ -59,12 +73,10 @@ public class PanView extends FrameLayout {
     private void initialize() {
         scrollViewX = new HorizontalScrollView(getContext()) {
 
-            private long timeLastScrollChange;
-
             @Override
             public boolean onInterceptTouchEvent(MotionEvent event) {
                 // If scroll has expired
-                if (timeLastScrollChange > SCROLL_CHANGE_EXPIRATION) {
+                if (System.nanoTime() - timeLastScrollChangeX > SCROLL_CHANGE_EXPIRATION) {
                     isScrollingX = false;
                 }
 
@@ -97,17 +109,23 @@ public class PanView extends FrameLayout {
                 isScrollingX = true;
 
                 // Store time of this scroll change
-                timeLastScrollChange = System.nanoTime();
+                timeLastScrollChangeX = System.nanoTime();
 
                 // Tell the scrollbar view to redraw
                 scrollbarLens.postInvalidate();
+
+                // Notify listener
+                if (panChangeListener != null) {
+                    panChangeListener.onPanChange(l, scrollViewY.getScrollY(), oldl, oldScrollY);
+                }
+
+                // Store value for later use elsewhere
+                oldScrollX = l;
             }
 
         };
 
         scrollViewY = new ScrollView(getContext()) {
-
-            private long timeLastScrollChange;
 
             @Override
             public boolean onInterceptTouchEvent(MotionEvent event) {
@@ -115,7 +133,7 @@ public class PanView extends FrameLayout {
                 scrollbarLens.awakenScrollBars();
 
                 // If scroll has expired
-                if (timeLastScrollChange > SCROLL_CHANGE_EXPIRATION) {
+                if (System.nanoTime() - timeLastScrollChangeY > SCROLL_CHANGE_EXPIRATION) {
                     isScrollingY = false;
                 }
 
@@ -131,10 +149,18 @@ public class PanView extends FrameLayout {
                 isScrollingY = true;
 
                 // Store time of this scroll change
-                timeLastScrollChange = System.nanoTime();
+                timeLastScrollChangeY = System.nanoTime();
 
                 // Tell the scrollbar view to redraw
                 scrollbarLens.postInvalidate();
+
+                // Notify listener
+                if (panChangeListener != null) {
+                    panChangeListener.onPanChange(scrollViewX.getScrollX(), t, oldScrollX, oldt);
+                }
+
+                // Store value for later use elsewhere
+                oldScrollY = t;
             }
 
         };
@@ -143,6 +169,54 @@ public class PanView extends FrameLayout {
 
         fillViewportHeight = DEF_FILL_VIEWPORT_HEIGHT;
         fillViewportWidth = DEF_FILL_VIEWPORT_WIDTH;
+
+        timerWatchThing = new Timer();
+        timerWatchThing.scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+                // If X scroll has expired
+                if (isScrollingX && System.nanoTime() - timeLastScrollChangeX > SCROLL_CHANGE_EXPIRATION) {
+                    isScrollingX = false;
+
+                    // Park X scroll
+                    scrollViewX.scrollTo(scrollViewX.getScrollX(), scrollViewX.getScrollY());
+
+                    // If not scrolling vertically, either, and stop listener is set, notify it
+                    if (!isScrollingY && panStopListener != null) {
+                        post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                panStopListener.onPanStop();
+                            }
+
+                        });
+                    }
+                }
+
+                // If Y scroll has expired
+                if (isScrollingY && System.nanoTime() - timeLastScrollChangeY > SCROLL_CHANGE_EXPIRATION) {
+                    isScrollingY = false;
+
+                    // Park Y scroll
+                    scrollViewY.scrollTo(scrollViewY.getScrollX(), scrollViewY.getScrollY());
+
+                    // If not scrolling horizontally, either, and stop listener is set, notify it
+                    if (!isScrollingX && panStopListener != null) {
+                        post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                panStopListener.onPanStop();
+                            }
+
+                        });
+                    }
+                }
+            }
+
+        }, 0l, 200l);
     }
 
     private void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -182,6 +256,30 @@ public class PanView extends FrameLayout {
         this.fillViewportHeight = fillViewportHeight;
     }
 
+    public int getPanX() {
+        return scrollViewX.getScrollX();
+    }
+
+    public void setPanX(int panX) {
+        scrollViewX.setScrollX(panX);
+    }
+
+    public int getPanY() {
+        return scrollViewY.getScrollY();
+    }
+
+    public void setPanY(int panY) {
+        scrollViewY.setScrollY(panY);
+    }
+
+    public void setOnPanChangeListener(OnPanChangeListener panChangeListener) {
+        this.panChangeListener = panChangeListener;
+    }
+
+    public void setOnPanStopListener(OnPanStopListener panStopListener) {
+        this.panStopListener = panStopListener;
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -204,6 +302,18 @@ public class PanView extends FrameLayout {
 
         // Add scrollbar view
         addView(scrollbarLens);
+    }
+
+    public interface OnPanChangeListener {
+
+        void onPanChange(int l, int t, int oldl, int oldt);
+
+    }
+
+    public interface OnPanStopListener {
+
+        void onPanStop();
+
     }
 
     private class ScrollbarLens extends ScrollView {

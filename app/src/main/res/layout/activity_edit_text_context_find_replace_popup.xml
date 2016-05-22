@@ -4,33 +4,31 @@
     style="@style/Activity.EditText.Popup.Root">
 
     <LinearLayout
-        android:id="@+id/activityEditTextMoreOptsPopupItemFilename"
+        android:id="@+id/activityEditTextContextFindReplacePopupReplace"
         style="@style/Activity.EditText.Popup.Item">
 
         <TextView
-            android:text="[ filename ]"
-            style="@style/Activity.EditText.Popup.Item.Text" />
-
-    </LinearLayout>
-
-    <LinearLayout style="@style/Activity.EditText.Popup.Item.Separator" />
-
-    <LinearLayout
-        android:id="@+id/activityEditTextMoreOptsPopupItemGoto"
-        style="@style/Activity.EditText.Popup.Item">
-
-        <TextView
-            android:text="@string/popup_activity_edit_text_more_options_goto"
+            android:text="Replace"
             style="@style/Activity.EditText.Popup.Item.Text" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/activityEditTextMoreOptsPopupItemFind"
+        android:id="@+id/activityEditTextContextFindReplacePopupNext"
         style="@style/Activity.EditText.Popup.Item">
 
         <TextView
-            android:text="@string/popup_activity_edit_text_more_options_find"
+            android:text="Next"
+            style="@style/Activity.EditText.Popup.Item.Text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activityEditTextContextFindReplacePopupPrevious"
+        style="@style/Activity.EditText.Popup.Item">
+
+        <TextView
+            android:text="Previous"
             style="@style/Activity.EditText.Popup.Item.Text" />
 
     </LinearLayout>

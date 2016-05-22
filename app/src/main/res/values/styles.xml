@@ -34,7 +34,7 @@
         <item name="android:layout_width">match_parent</item>
     </style>
 
-    <style name="Activity.EditText.MoreOptsPopup.Root" parent="">
+    <style name="Activity.EditText.Popup.Root" parent="">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:orientation">vertical</item>
@@ -42,7 +42,7 @@
         <item name="android:paddingTop">8dp</item>
     </style>
 
-    <style name="Activity.EditText.MoreOptsPopup.Item" parent="">
+    <style name="Activity.EditText.Popup.Item" parent="">
         <item name="android:background">?android:attr/selectableItemBackground</item>
         <item name="android:gravity">start|center_vertical</item>
         <item name="android:layout_height">48dp</item>
@@ -52,7 +52,7 @@
         <item name="android:onClick">onMoreOptsPopupItemSelected</item>
     </style>
 
-    <style name="Activity.EditText.MoreOptsPopup.Item.Text" parent="">
+    <style name="Activity.EditText.Popup.Item.Text" parent="">
         <item name="android:gravity">start|center_vertical</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">wrap_content</item>
@@ -64,7 +64,7 @@
         <item name="android:tag">text</item>
     </style>
 
-    <style name="Activity.EditText.MoreOptsPopup.Item.Separator" parent="">
+    <style name="Activity.EditText.Popup.Item.Separator" parent="">
         <item name="android:background">#18000000</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_width">match_parent</item>
