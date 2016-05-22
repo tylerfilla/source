@@ -43,9 +43,9 @@
     <string name="popup_activity_edit_text_more_options_syntax_highlighting">Syntax highlighting</string>
 
     <!-- Found in edit text activity editor search operation result snackbar -->
-    <string name="operation_activity_edit_text_editor_search_result_snackbar_success_text">%1$d of %2$d occurrences</string>
-    <string name="operation_activity_edit_text_editor_search_result_snackbar_success_action_next_text">Next</string>
-    <string name="operation_activity_edit_text_editor_search_result_snackbar_fail_text">\"%1$s\" was not found</string>
+    <string name="operation_activity_edit_text_editor_search_result_snackbar_success_text">Found %1$d occurrences of \"%2$s\"</string>
+    <string name="operation_activity_edit_text_editor_search_result_snackbar_fail_text">Unable to find \"%1$s\"</string>
+    <string name="operation_activity_edit_text_editor_search_result_snackbar_end_text">No occurrences remain</string>
 
     <!-- Miscellaneous -->
     <string name="_default_file_name">Untitled</string>

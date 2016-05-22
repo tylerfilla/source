@@ -37,7 +37,9 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.microdev.source.util.Callback;
 import io.microdev.source.util.DimenUtil;
@@ -197,33 +199,7 @@ public class EditTextActivity extends AppCompatActivity {
                     if (!popupContextFindReplace.isShowing()) {
                         // Check selection bounds
                         if (editor.getSelectionStart() == findReplaceSelectionStart && editor.getSelectionEnd() == findReplaceSelectionEnd) {
-                            // Get popup content view
-                            View popupContentView = popupContextFindReplace.getContentView();
-
-                            // Get editor layout
-                            Layout layout = editor.getLayout();
-
-                            // Sanity check (we can't really do much if this fails, but it shouldn't kill the app)
-                            if (layout != null) {
-                                // Measure popup contents
-                                popupContentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-                                // Get bottom-left coordinates of occurrence text
-                                int iX = editor.getLeft() - panView.getPanX() + (int) layout.getPrimaryHorizontal(findReplaceSelectionStart);
-                                int iY = editor.getTop() - panView.getPanY() + layout.getLineBottom(layout.getLineForOffset(findReplaceSelectionStart));
-
-                                // Calculate coordinates at which to place popup
-                                int popupX = iX;
-                                int popupY = iY + (popupContentView.getMeasuredHeight() + editor.getLineHeight()) / 2;
-
-                                // Check if popup exceeds available vertical space
-                                if (popupY + popupContentView.getMeasuredHeight() / 2 >= panView.getHeight()) {
-                                    // Move popup above occurrence text
-                                    popupY -= 2 * editor.getLineHeight() + popupContentView.getMeasuredHeight();
-                                }
-
-                                popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, popupX, popupY);
-                            }
+                            showPopupContextFindReplace();
                         } else {
                             // Cancel find and replace operation
                             withinFindReplace = false;
@@ -590,113 +566,125 @@ public class EditTextActivity extends AppCompatActivity {
         displayDialogFindReplace(new Callback<DialogResultFindReplace>() {
 
             @Override
-            public void ring(final DialogResultFindReplace result) {
-                // List of occurrence indices
-                final List<Integer> indexList = new ArrayList<>();
-
+            public void ring(final DialogResultFindReplace resultDialog) {
                 // Find occurrences in editor
-                findInEditor(result.getSearch(), 0, false, !result.isEnableMatchCase(), new Callback<Integer>() {
+                findInEditor(resultDialog.getSearch(), 0, false, !resultDialog.isEnableMatchCase(), new Callback<ResultFindInEditor>() {
 
                     @Override
-                    public void ring(Integer index) {
-                        // If no occurrences remain
-                        if (index == -1) {
+                    public void ring(final ResultFindInEditor resultFind) {
+                        // If reached end of occurrences
+                        if (resultFind.getOffset() == -1) {
+                            // Cancel find and replace operation
+                            withinFindReplace = false;
+
+                            // Dismiss find and replace dialog if it is showing
+                            if (popupContextFindReplace.isShowing()) {
+                                popupContextFindReplace.dismiss();
+                            }
+
                             // If no occurrences were found
-                            if (indexList.isEmpty()) {
+                            if (resultFind.getOccurrenceTotal() == 0) {
                                 // Notify the user
-                                Snackbar.make(editor, getString(R.string.operation_activity_edit_text_editor_search_result_snackbar_fail_text, result.getSearch()), Snackbar.LENGTH_SHORT).show();
+                                Snackbar.make(editor, getString(R.string.operation_activity_edit_text_editor_search_result_snackbar_fail_text, resultDialog.getSearch()), Snackbar.LENGTH_SHORT).show();
                             } else {
-                                final int[] indexContainer = new int[] { indexList.get(0) };
-
-                                // Get popup content view
-                                View popupContentView = popupContextFindReplace.getContentView();
-
-                                // Get contents and stuff
-                                View buttonReplace = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupReplace);
-                                View buttonNext = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupNext);
-                                View buttonPrevious = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupPrevious);
-
-                                // Show replace button if replacing, else hide it
-                                if (result.isEnableReplace()) {
-                                    buttonReplace.setVisibility(View.VISIBLE);
-                                } else {
-                                    buttonReplace.setVisibility(View.GONE);
-                                }
-
-                                // Listen for replace button clicks
-                                buttonReplace.setOnClickListener(new View.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(View v) {
-                                        System.out.println("Replace");
-                                    }
-
-                                });
-
-                                // Listen for next button clicks
-                                buttonNext.setOnClickListener(new View.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(View v) {
-                                        System.out.println("Next");
-                                    }
-
-                                });
-
-                                // Listen for previous button clicks
-                                buttonPrevious.setOnClickListener(new View.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(View v) {
-                                        System.out.println("Previous");
-                                    }
-
-                                });
-
-                                int i = indexContainer[0];
-
-                                // Set within find and replace operation
-                                withinFindReplace = true;
-
-                                // Set find and replace bounds
-                                findReplaceSelectionStart = i;
-                                findReplaceSelectionEnd = i + result.getSearch().length();
-
-                                // Select occurrence text
-                                editor.setSelection(i, i + result.getSearch().length());
-
-                                // Get editor layout
-                                Layout layout = editor.getLayout();
-
-                                // Sanity check (we can't really do much if this fails, but it shouldn't kill the app)
-                                if (layout != null) {
-                                    // Measure popup contents
-                                    popupContentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-                                    // Get bottom-left coordinates of occurrence text
-                                    int iX = editor.getLeft() - panView.getPanX() + (int) layout.getPrimaryHorizontal(i);
-                                    int iY = editor.getTop() - panView.getPanY() + layout.getLineBottom(layout.getLineForOffset(i));
-
-                                    // Calculate coordinates at which to place popup
-                                    int popupX = iX;
-                                    int popupY = iY + (popupContentView.getMeasuredHeight() + editor.getLineHeight()) / 2;
-
-                                    // Check if popup exceeds available vertical space
-                                    if (popupY + popupContentView.getMeasuredHeight() / 2 >= panView.getHeight()) {
-                                        // Move popup above occurrence text
-                                        popupY -= 2 * editor.getLineHeight() + popupContentView.getMeasuredHeight();
-                                    }
-
-                                    // Show popup
-                                    popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, 0, 0);
-
-                                    // Update popup
-                                    popupContextFindReplace.update();
-                                }
+                                // No occurrences remain, notify user
+                                Snackbar.make(editor, R.string.operation_activity_edit_text_editor_search_result_snackbar_end_text, Snackbar.LENGTH_SHORT).show();
                             }
                         } else {
-                            // Store occurrence index
-                            indexList.add(index);
+                            // Get offset from result
+                            int offset = resultFind.getOffset();
+
+                            // Get popup content view
+                            View popupContentView = popupContextFindReplace.getContentView();
+
+                            // Get contents and stuff
+                            View buttonReplace = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupReplace);
+                            View buttonNext = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupNext);
+                            View buttonPrevious = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupPrevious);
+
+                            // Show replace button if replacing, else hide it
+                            if (resultDialog.isEnableReplace()) {
+                                buttonReplace.setVisibility(View.VISIBLE);
+                            } else {
+                                buttonReplace.setVisibility(View.GONE);
+                            }
+
+                            // Show next button if a valid occurrence follows, else hide it
+                            boolean validFollows = false;
+                            for (int i = resultFind.getOccurrenceCurrent(); i < resultFind.getOccurrenceTotal(); i++) {
+                                if (i == resultFind.getOccurrenceCurrent()) {
+                                    continue;
+                                }
+
+                                validFollows = validFollows || resultFind.getOccurenceValid(i);
+                            }
+                            if (validFollows) {
+                                buttonNext.setVisibility(View.VISIBLE);
+                            } else {
+                                buttonNext.setVisibility(View.GONE);
+                            }
+
+                            // Show previous button if a valid occurrence precedes, else hide it
+                            boolean validPrecedes = false;
+                            for (int i = resultFind.getOccurrenceCurrent(); i >= 0; i--) {
+                                if (i == resultFind.getOccurrenceCurrent()) {
+                                    continue;
+                                }
+
+                                validPrecedes = validPrecedes || resultFind.getOccurenceValid(i);
+                            }
+                            if (validPrecedes) {
+                                buttonPrevious.setVisibility(View.VISIBLE);
+                            } else {
+                                buttonPrevious.setVisibility(View.GONE);
+                            }
+
+                            // Listen for replace button clicks
+                            buttonReplace.setOnClickListener(new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View v) {
+                                    // TODO: Replace text
+
+                                    // Replace occurrence
+                                    resultFind.dispatchResponse(ResultFindInEditor.Response.REPLACE);
+                                }
+
+                            });
+
+                            // Listen for next button clicks
+                            buttonNext.setOnClickListener(new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View v) {
+                                    // Move to next occurrence
+                                    resultFind.dispatchResponse(ResultFindInEditor.Response.NEXT);
+                                }
+
+                            });
+
+                            // Listen for previous button clicks
+                            buttonPrevious.setOnClickListener(new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View v) {
+                                    // Move to previous occurrence
+                                    resultFind.dispatchResponse(ResultFindInEditor.Response.PREVIOUS);
+                                }
+
+                            });
+
+                            // Set within find and replace operation
+                            withinFindReplace = true;
+
+                            // Set find and replace bounds
+                            findReplaceSelectionStart = offset;
+                            findReplaceSelectionEnd = offset + resultDialog.getSearch().length();
+
+                            // Select occurrence text
+                            editor.setSelection(offset, offset + resultDialog.getSearch().length());
+
+                            showPopupContextFindReplace();
                         }
                     }
 
@@ -921,7 +909,46 @@ public class EditTextActivity extends AppCompatActivity {
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
-    private void findInEditor(String search, int start, boolean reverse, boolean ignoreCase, final Callback<Integer> callback) {
+    private void showPopupContextFindReplace() {
+        // Get popup content view
+        View popupContentView = popupContextFindReplace.getContentView();
+
+        // Get editor layout
+        Layout layout = editor.getLayout();
+
+        // Sanity check (we can't really do much if this fails, but it shouldn't kill the app)
+        if (layout != null) {
+            // Measure popup contents
+            popupContentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+
+            // Get bottom-left coordinates of occurrence text
+            int iX = editor.getLeft() - panView.getPanX() + (int) layout.getPrimaryHorizontal(findReplaceSelectionStart);
+            int iY = editor.getTop() - panView.getPanY() + layout.getLineBottom(layout.getLineForOffset(findReplaceSelectionStart));
+
+            // Calculate coordinates at which to place popup
+            int popupX = iX;
+            int popupY = iY + (popupContentView.getMeasuredHeight() + editor.getLineHeight()) / 2;
+
+            // Check if popup exceeds available vertical space
+            if (popupY + popupContentView.getMeasuredHeight() / 2 >= panView.getHeight()) {
+                // Move popup above occurrence text
+                popupY -= 2 * editor.getLineHeight() + popupContentView.getMeasuredHeight();
+            }
+
+            // If popup is already showing
+            if (popupContextFindReplace.isShowing()) {
+                // Update popup position
+                popupContentView.requestLayout();
+                popupContextFindReplace.update(popupX, popupY, -1, -1);
+            } else {
+                // Show popup
+                popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, popupX, popupY);
+                popupContextFindReplace.update();
+            }
+        }
+    }
+
+    private void findInEditor(String search, int start, boolean reverse, boolean ignoreCase, final Callback<ResultFindInEditor> callback) {
         // Get editor text
         String text = editor.getText().toString();
 
@@ -931,18 +958,197 @@ public class EditTextActivity extends AppCompatActivity {
             search = search.toLowerCase();
         }
 
+        // List to store occurrence indices
+        final List<Integer> occurrenceIndexList = new ArrayList<>();
+
         // Iterate over occurrences
-        int index = start;
-        while ((index = reverse ? text.lastIndexOf(search, index) : text.indexOf(search, index)) > -1) {
-            // Call back with index of occurrence
-            callback.ring(index);
+        int offset = start;
+        while ((offset = reverse ? text.lastIndexOf(search, offset) : text.indexOf(search, offset)) > -1) {
+            // Store occurrence index
+            occurrenceIndexList.add(offset);
 
             // Start next search from the next character
-            index += reverse ? -1 : 1;
+            offset += reverse ? -1 : 1;
         }
 
-        // Call back with -1 to signal end of occurrences
-        callback.ring(-1);
+        // Notify caller if no occurrences were found with an invalid result
+        if (occurrenceIndexList.isEmpty()) {
+            callback.ring(new ResultFindInEditor(-1, offset, occurrenceIndexList.size()));
+            return;
+        }
+
+        // Final package to hold iterator across callbacks
+        final int[] i = new int[] { 0 };
+
+        // Create result to represent first occurrence
+        ResultFindInEditor resultFirst = new ResultFindInEditor(occurrenceIndexList.get(i[0]), i[0], occurrenceIndexList.size());
+
+        // Create callback to receive first response
+        resultFirst.setResponseCallback(new Callback<ResultFindInEditor.Response>() {
+
+            @Override
+            public void ring(ResultFindInEditor.Response response) {
+                // Next valid occurrences in either direction
+                int nextValidForward = -1;
+                int nextValidBackward = -1;
+
+                // Search forward for next valid occurrence
+                int searchForward = i[0];
+                while (true) {
+                    // Increment iterator
+                    searchForward++;
+
+                    // If we hit upper boundary
+                    if (searchForward > occurrenceIndexList.size() - 1) {
+                        nextValidForward = -1;
+                        break;
+                    }
+
+                    // If this is a valid occurrence
+                    if (occurrenceIndexList.get(searchForward) != -1) {
+                        nextValidForward = searchForward;
+                        break;
+                    }
+                }
+
+                // Search backward for next valid occurrence
+                int searchBackward = i[0];
+                while (true) {
+                    // Decrement iterator
+                    searchBackward--;
+
+                    // If we hit lower boundary
+                    if (searchBackward < 0) {
+                        nextValidBackward = -1;
+                        break;
+                    }
+
+                    // If this is a valid occurrence
+                    if (occurrenceIndexList.get(searchBackward) != -1) {
+                        nextValidBackward = searchBackward;
+                        break;
+                    }
+                }
+
+                // Switch against response
+                switch (response) {
+                case REPLACE:
+                    // Mark this index as invalid (replaced) without shifting occurrences
+                    occurrenceIndexList.set(i[0], -1);
+
+                    // Move to next valid occurrence (try forward, then backward)
+                    if (nextValidForward != -1) {
+                        i[0] = nextValidForward;
+                    } else if (nextValidBackward != -1) {
+                        i[0] = nextValidBackward;
+                    } else {
+                        // Reached end of replacements; notify caller with invalid result
+                        callback.ring(new ResultFindInEditor(-1, i[0], occurrenceIndexList.size()));
+                        return;
+                    }
+                    break;
+                case NEXT:
+                    // Move forwards to next valid occurrence
+                    i[0] = nextValidForward;
+                    break;
+                case PREVIOUS:
+                    // Move backwards to next valid occurrence
+                    i[0] = nextValidBackward;
+                    break;
+                }
+
+                // Prepare next result
+                ResultFindInEditor resultNext = new ResultFindInEditor(occurrenceIndexList.get(i[0]), i[0], occurrenceIndexList.size());
+
+                // Iterate over occurrences
+                for (int i = 0; i < occurrenceIndexList.size(); i++) {
+                    // Flag each occurrence as either valid or invalid
+                    resultNext.setOccurrenceValid(i, occurrenceIndexList.get(i) != -1);
+                }
+
+                // Use this same callback for next result, enabling recursive iteration
+                resultNext.setResponseCallback(this);
+
+                // Call back with next result
+                callback.ring(resultNext);
+            }
+
+        });
+
+        // Call back with first result
+        callback.ring(resultFirst);
+    }
+
+    private static class ResultFindInEditor {
+
+        private int offset;
+        private int occurrenceCurrent;
+        private int occurrenceTotal;
+
+        private Map<Integer, Boolean> validityMap;
+
+        private Callback<Response> responseCallback;
+
+        public ResultFindInEditor() {
+            offset = -1;
+            occurrenceCurrent = 0;
+            occurrenceTotal = 0;
+
+            validityMap = new HashMap<>();
+        }
+
+        public ResultFindInEditor(int offset, int occurrenceCurrent, int occurrenceTotal) {
+            this.offset = offset;
+            this.occurrenceCurrent = occurrenceCurrent;
+            this.occurrenceTotal = occurrenceTotal;
+
+            validityMap = new HashMap<>();
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public int getOccurrenceCurrent() {
+            return occurrenceCurrent;
+        }
+
+        public int getOccurrenceTotal() {
+            return occurrenceTotal;
+        }
+
+        public boolean getOccurenceValid(int index) {
+            if (validityMap.containsKey(index)) {
+                return validityMap.get(index);
+            }
+
+            return true;
+        }
+
+        public void setOccurrenceValid(int index, boolean valid) {
+            validityMap.put(index, valid);
+        }
+
+        public Callback<Response> getResponseCallback() {
+            return responseCallback;
+        }
+
+        public void setResponseCallback(Callback<Response> responseCallback) {
+            this.responseCallback = responseCallback;
+        }
+
+        public void dispatchResponse(Response response) {
+            responseCallback.ring(response);
+        }
+
+        public enum Response {
+
+            REPLACE,
+            NEXT,
+            PREVIOUS
+
+        }
+
     }
 
     private static class DialogResultFindReplace {
