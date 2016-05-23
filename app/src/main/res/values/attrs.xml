@@ -21,6 +21,8 @@
         <attr name="fillViewportHeight" format="boolean" />
         <attr name="fillViewportWidth" format="boolean" />
 
+        <attr name="useNativeSmoothScroll" format="boolean" />
+
     </declare-styleable>
 
 </resources>

@@ -278,6 +278,10 @@ public class EditorText extends EditText {
         this.enableSyntaxHighlighting = enableSyntaxHighlighting;
     }
 
+    public float getLineNumberColumnWidth() {
+        return lineNumberColumnWidth;
+    }
+
     public void undo() {
         undoProvider.undo(1);
     }

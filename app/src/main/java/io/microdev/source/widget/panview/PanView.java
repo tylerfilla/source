@@ -1,9 +1,11 @@
 package io.microdev.source.widget.panview;
 
+import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,8 +26,12 @@ public class PanView extends FrameLayout {
     private static final boolean DEF_FILL_VIEWPORT_HEIGHT = false;
     private static final boolean DEF_FILL_VIEWPORT_WIDTH = false;
 
+    private static final boolean DEF_USE_NATIVE_SMOOTH_SCROLL = false;
+
     private boolean fillViewportHeight;
     private boolean fillViewportWidth;
+
+    private boolean useNativeSmoothScroll;
 
     private HorizontalScrollView scrollViewX;
     private ScrollView scrollViewY;
@@ -170,6 +176,8 @@ public class PanView extends FrameLayout {
         fillViewportHeight = DEF_FILL_VIEWPORT_HEIGHT;
         fillViewportWidth = DEF_FILL_VIEWPORT_WIDTH;
 
+        useNativeSmoothScroll = DEF_USE_NATIVE_SMOOTH_SCROLL;
+
         timerWatchThing = new Timer();
         timerWatchThing.scheduleAtFixedRate(new TimerTask() {
 
@@ -226,6 +234,8 @@ public class PanView extends FrameLayout {
         fillViewportHeight = styledAttrs.getBoolean(R.styleable.PanView_fillViewportHeight, fillViewportHeight);
         fillViewportWidth = styledAttrs.getBoolean(R.styleable.PanView_fillViewportWidth, fillViewportWidth);
 
+        useNativeSmoothScroll = styledAttrs.getBoolean(R.styleable.PanView_useNativeSmoothScroll, useNativeSmoothScroll);
+
         // Recycle styled attributes array
         styledAttrs.recycle();
     }
@@ -256,6 +266,14 @@ public class PanView extends FrameLayout {
         this.fillViewportHeight = fillViewportHeight;
     }
 
+    public boolean isUseNativeSmoothScroll() {
+        return useNativeSmoothScroll;
+    }
+
+    public void setUseNativeSmoothScroll(boolean useNativeSmoothScroll) {
+        this.useNativeSmoothScroll = useNativeSmoothScroll;
+    }
+
     public int getPanX() {
         return scrollViewX.getScrollX();
     }
@@ -278,6 +296,45 @@ public class PanView extends FrameLayout {
 
     public void setOnPanStopListener(OnPanStopListener panStopListener) {
         this.panStopListener = panStopListener;
+    }
+
+    public void panTo(int x, int y) {
+        scrollViewX.scrollTo(x, scrollViewX.getScrollY());
+        scrollViewY.scrollTo(scrollViewY.getScrollX(), y);
+    }
+
+    public void smoothPanTo(int x, int y) {
+        if (useNativeSmoothScroll) {
+            scrollViewX.smoothScrollTo(x, scrollViewX.getScrollY());
+            scrollViewY.smoothScrollTo(scrollViewY.getScrollX(), y);
+        } else {
+            ObjectAnimator animScrollX = ObjectAnimator.ofInt(scrollViewX, "scrollX", x);
+            ObjectAnimator animScrollY = ObjectAnimator.ofInt(scrollViewY, "scrollY", y);
+
+            animScrollX.setInterpolator(new FastOutSlowInInterpolator());
+            animScrollY.setInterpolator(new FastOutSlowInInterpolator());
+
+            int duration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
+            animScrollX.setDuration(duration);
+            animScrollY.setDuration(duration);
+
+            animScrollX.start();
+            animScrollY.start();
+        }
+    }
+
+    public void panBy(int dx, int dy) {
+        scrollViewX.scrollBy(dx, 0);
+        scrollViewY.scrollBy(0, dy);
+    }
+
+    public void smoothPanBy(int dx, int dy) {
+        if (useNativeSmoothScroll) {
+            scrollViewX.smoothScrollBy(dx, 0);
+            scrollViewY.smoothScrollBy(0, dy);
+        } else {
+            smoothPanTo(scrollViewX.getScrollX() + dx, scrollViewY.getScrollY() + dy);
+        }
     }
 
     @Override

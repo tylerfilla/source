@@ -203,6 +203,10 @@ public class EditTextActivity extends AppCompatActivity {
                     if (!popupContextFindReplace.isShowing()) {
                         // Check selection bounds
                         if (editor.getSelectionStart() == findReplaceSelectionStart && editor.getSelectionEnd() == findReplaceSelectionEnd) {
+                            // Select occurrence text
+                            editor.setSelection(findReplaceSelectionStart, findReplaceSelectionEnd);
+
+                            // Show popup
                             showPopupContextFindReplace();
                         } else {
                             // Cancel find and replace operation
@@ -571,6 +575,9 @@ public class EditTextActivity extends AppCompatActivity {
 
             @Override
             public void ring(final DialogResultFindReplace resultDialog) {
+                // Appears to detach keyboard from editor enough to not make scrolling spazzy
+                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(editor.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
                 // Find occurrences in editor
                 findInEditor(resultDialog.getSearch(), 0, false, !resultDialog.isEnableMatchCase(), new Callback<ResultFindInEditor>() {
 
@@ -586,6 +593,9 @@ public class EditTextActivity extends AppCompatActivity {
                                 popupContextFindReplace.dismiss();
                             }
 
+                            // Re-enable editor focus
+                            editor.setFocusable(true);
+
                             // If no occurrences were found
                             if (resultFind.getOccurrenceTotal() == 0) {
                                 // Notify the user
@@ -597,6 +607,13 @@ public class EditTextActivity extends AppCompatActivity {
                         } else {
                             // Get offset from result
                             int offset = resultFind.getOffset();
+
+                            // Set within find and replace operation
+                            withinFindReplace = true;
+
+                            // Set find and replace bounds
+                            findReplaceSelectionStart = offset;
+                            findReplaceSelectionEnd = offset + resultDialog.getSearch().length();
 
                             // Get popup content view
                             View popupContentView = popupContextFindReplace.getContentView();
@@ -632,6 +649,9 @@ public class EditTextActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onClick(View v) {
+                                    // Dismiss popup
+                                    popupContextFindReplace.dismiss();
+
                                     // Replace text
                                     editor.getText().replace(findReplaceSelectionStart, findReplaceSelectionEnd, resultDialog.getReplace());
 
@@ -646,6 +666,9 @@ public class EditTextActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onClick(View v) {
+                                    // Dismiss popup
+                                    popupContextFindReplace.dismiss();
+
                                     // Move to next occurrence
                                     resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.NEXT, null));
                                 }
@@ -657,24 +680,60 @@ public class EditTextActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onClick(View v) {
+                                    // Dismiss popup
+                                    popupContextFindReplace.dismiss();
+
                                     // Move to previous occurrence
                                     resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.PREVIOUS, null));
                                 }
 
                             });
 
-                            // Set within find and replace operation
-                            withinFindReplace = true;
+                            // Re-measure the content view
+                            popupContentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-                            // Set find and replace bounds
-                            findReplaceSelectionStart = offset;
-                            findReplaceSelectionEnd = offset + resultDialog.getSearch().length();
+                            // Get editor text layout
+                            Layout layout = editor.getLayout();
 
-                            // Select occurrence text
-                            editor.setSelection(offset, offset + resultDialog.getSearch().length());
+                            // Calculate number of lines spanned by the selection
+                            int selectionLineSpan = 1 + layout.getLineForOffset(findReplaceSelectionEnd) - layout.getLineForOffset(findReplaceSelectionStart);
 
-                            // Show find and replace popup
-                            showPopupContextFindReplace();
+                            // Interesting stuff about selection bounds
+                            int selectionLeft = 0;
+                            int selectionRight = 0;
+                            int selectionTop = editor.getTop() + layout.getLineTop(layout.getLineForOffset(findReplaceSelectionStart));
+                            int selectionBottom = editor.getTop() + layout.getLineBottom(layout.getLineForOffset(findReplaceSelectionEnd));
+
+                            // If selection only spans one line
+                            if (selectionLineSpan == 1) {
+                                // Get stuff about selection
+                                selectionLeft = editor.getLeft() + (int) editor.getLineNumberColumnWidth() + (int) layout.getPrimaryHorizontal(findReplaceSelectionStart);
+                                selectionRight = editor.getLeft() + (int) editor.getLineNumberColumnWidth() + (int) layout.getPrimaryHorizontal(findReplaceSelectionEnd);
+                            } else {
+                                // Get stuff about selection
+                                selectionLeft = editor.getLeft() + (int) editor.getLineNumberColumnWidth();
+                                selectionRight = editor.getLeft() + (int) editor.getLineNumberColumnWidth() + editor.getWidth();
+                            }
+
+                            // Calculate pan coordinates for optimum user interaction
+                            int panX = selectionLeft - (panView.getWidth() - (selectionRight - selectionLeft)) / 2;
+                            int panY = selectionTop - panView.getHeight() / 5 + (selectionBottom - selectionTop) / 2;
+
+                            // Pan to these coordinates
+                            panView.smoothPanTo(panX, panY);
+
+                            editor.postDelayed(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    // Select occurrence text
+                                    editor.setSelection(findReplaceSelectionStart, findReplaceSelectionEnd);
+
+                                    // Show find and replace popup
+                                    showPopupContextFindReplace();
+                                }
+
+                            }, getResources().getInteger(android.R.integer.config_mediumAnimTime));
                         }
                     }
 
@@ -911,13 +970,13 @@ public class EditTextActivity extends AppCompatActivity {
             // Measure popup contents
             popupContentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-            // Get bottom-left coordinates of occurrence text
+            // Get top-left coordinates of occurrence text
             int iX = editor.getLeft() - panView.getPanX() + (int) layout.getPrimaryHorizontal(findReplaceSelectionStart);
-            int iY = editor.getTop() - panView.getPanY() + layout.getLineBottom(layout.getLineForOffset(findReplaceSelectionStart));
+            int iY = editor.getTop() - panView.getPanY() + layout.getLineTop(layout.getLineForOffset(findReplaceSelectionStart));
 
             // Calculate coordinates at which to place popup
             int popupX = iX;
-            int popupY = iY + (popupContentView.getMeasuredHeight() + editor.getLineHeight()) / 2;
+            int popupY = iY + popupContentView.getMeasuredHeight() + editor.getLineHeight() / 2;
 
             // Check if popup exceeds available vertical space
             if (popupY + popupContentView.getMeasuredHeight() / 2 >= panView.getHeight()) {
@@ -925,16 +984,9 @@ public class EditTextActivity extends AppCompatActivity {
                 popupY -= 2 * editor.getLineHeight() + popupContentView.getMeasuredHeight();
             }
 
-            // If popup is already showing
-            if (popupContextFindReplace.isShowing()) {
-                // Update popup position
-                popupContentView.requestLayout();
-                popupContextFindReplace.update(popupX, popupY, -1, -1);
-            } else {
-                // Show popup
-                popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, popupX, popupY);
-                popupContextFindReplace.update();
-            }
+            // Show popup
+            popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, popupX, popupY);
+            popupContextFindReplace.update();
         }
     }
 
