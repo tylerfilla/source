@@ -11,7 +11,7 @@
         style="@style/Activity.EditText.AppBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <io.microdev.source.widget.panview.PanView
+    <com.gmail.tylerfilla.widget.panview.PanView
         android:id="@+id/activityEditTextPanView"
         style="@style/Activity.EditText.PanView">
 
@@ -19,6 +19,6 @@
             android:id="@+id/activityEditTextEditor"
             style="@style/Activity.EditText.Editor" />
 
-    </io.microdev.source.widget.panview.PanView>
+    </com.gmail.tylerfilla.widget.panview.PanView>
 
 </RelativeLayout>

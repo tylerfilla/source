@@ -35,6 +35,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gmail.tylerfilla.widget.panview.PanView;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +46,6 @@ import java.util.Map;
 import io.microdev.source.util.Callback;
 import io.microdev.source.util.DimenUtil;
 import io.microdev.source.widget.editortext.EditorText;
-import io.microdev.source.widget.panview.PanView;
 
 public class EditTextActivity extends AppCompatActivity {
 

@@ -27,6 +27,8 @@ import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.gmail.tylerfilla.widget.panview.PanView;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,7 +37,6 @@ import java.util.Set;
 
 import io.microdev.source.util.DimenUtil;
 import io.microdev.source.widget.editorbinary.EditorBinary;
-import io.microdev.source.widget.panview.PanView;
 
 import static io.microdev.source.util.DimenUtil.dpToPx;
 
