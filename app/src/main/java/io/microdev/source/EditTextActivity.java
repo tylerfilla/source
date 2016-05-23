@@ -206,7 +206,7 @@ public class EditTextActivity extends AppCompatActivity {
                             // Select occurrence text
                             editor.setSelection(findReplaceSelectionStart, findReplaceSelectionEnd);
 
-                            // Show popup
+                            // Show find and replace popup
                             showPopupContextFindReplace();
                         } else {
                             // Cancel find and replace operation
@@ -717,7 +717,7 @@ public class EditTextActivity extends AppCompatActivity {
 
                             // Calculate pan coordinates for optimum user interaction
                             int panX = selectionLeft - (panView.getWidth() - (selectionRight - selectionLeft)) / 2;
-                            int panY = selectionTop - panView.getHeight() / 5 + (selectionBottom - selectionTop) / 2;
+                            int panY = selectionBottom - panView.getHeight() + Math.max(panView.getHeight() / 2, popupContentView.getMeasuredHeight() + 2 * editor.getLineHeight());
 
                             // Pan to these coordinates
                             panView.smoothPanTo(panX, panY);
@@ -970,23 +970,43 @@ public class EditTextActivity extends AppCompatActivity {
             // Measure popup contents
             popupContentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
 
-            // Get top-left coordinates of occurrence text
-            int iX = editor.getLeft() - panView.getPanX() + (int) layout.getPrimaryHorizontal(findReplaceSelectionStart);
-            int iY = editor.getTop() - panView.getPanY() + layout.getLineTop(layout.getLineForOffset(findReplaceSelectionStart));
+            // Calculate number of lines spanned by the selection
+            int selectionLineSpan = 1 + layout.getLineForOffset(findReplaceSelectionEnd) - layout.getLineForOffset(findReplaceSelectionStart);
 
-            // Calculate coordinates at which to place popup
-            int popupX = iX;
-            int popupY = iY + popupContentView.getMeasuredHeight() + editor.getLineHeight() / 2;
+            // Interesting stuff about selection bounds
+            int selectionLeft = 0;
+            int selectionRight = 0;
+            int selectionTop = editor.getTop() + layout.getLineTop(layout.getLineForOffset(findReplaceSelectionStart));
+            int selectionBottom = editor.getTop() + layout.getLineBottom(layout.getLineForOffset(findReplaceSelectionEnd));
 
-            // Check if popup exceeds available vertical space
-            if (popupY + popupContentView.getMeasuredHeight() / 2 >= panView.getHeight()) {
-                // Move popup above occurrence text
-                popupY -= 2 * editor.getLineHeight() + popupContentView.getMeasuredHeight();
+            // If selection only spans one line
+            if (selectionLineSpan == 1) {
+                // Get stuff about selection
+                selectionLeft = editor.getLeft() + (int) editor.getLineNumberColumnWidth() + (int) layout.getPrimaryHorizontal(findReplaceSelectionStart);
+                selectionRight = editor.getLeft() + (int) editor.getLineNumberColumnWidth() + (int) layout.getPrimaryHorizontal(findReplaceSelectionEnd);
+            } else {
+                // Get stuff about selection
+                selectionLeft = editor.getLeft() + (int) editor.getLineNumberColumnWidth();
+                selectionRight = editor.getLeft() + (int) editor.getLineNumberColumnWidth() + editor.getWidth();
+            }
+
+            // Calculate coordinates for popup
+            int popupX = editor.getLeft() + selectionLeft + panView.getLeft() - panView.getPanX();
+            int popupY = editor.getTop() + selectionBottom + panView.getTop() - panView.getPanY() + 2 * editor.getLineHeight();
+
+            // If popup exceeds space below selection
+            if (popupY + popupContentView.getMeasuredHeight() > panView.getBottom()) {
+                // Move popup above text
+                popupY = editor.getTop() + selectionTop + panView.getTop() - panView.getPanY() - popupContentView.getMeasuredHeight();
             }
 
             // Show popup
-            popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, popupX, popupY);
-            popupContextFindReplace.update();
+            if (popupContextFindReplace.isShowing()) {
+                popupContextFindReplace.update(popupX, popupY, -1, -1);
+            } else {
+                popupContextFindReplace.showAtLocation(editor, Gravity.NO_GRAVITY, popupX, popupY);
+                popupContextFindReplace.update();
+            }
         }
     }
 
