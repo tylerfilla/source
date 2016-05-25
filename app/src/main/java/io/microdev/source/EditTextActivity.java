@@ -35,6 +35,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gmail.tylerfilla.widget.panview.OnPanChangedListener;
+import com.gmail.tylerfilla.widget.panview.OnPanStoppedListener;
 import com.gmail.tylerfilla.widget.panview.PanView;
 
 import java.io.File;
@@ -178,10 +180,10 @@ public class EditTextActivity extends AppCompatActivity {
         popupContextFindReplace.setOutsideTouchable(true);
 
         // Listen for pan changes
-        panView.setOnPanChangeListener(new PanView.OnPanChangeListener() {
+        panView.addOnPanChangedListener(new OnPanChangedListener() {
 
             @Override
-            public void onPanChange(final int l, final int t, final int oldl, final int oldt) {
+            public void onPanChanged(final int l, final int t, final int oldl, final int oldt) {
                 // If within find and replace operation
                 if (withinFindReplace) {
                     // Dismiss the find and replace context popup if it is showing
@@ -194,10 +196,10 @@ public class EditTextActivity extends AppCompatActivity {
         });
 
         // Listen for pan stops
-        panView.setOnPanStopListener(new PanView.OnPanStopListener() {
+        panView.addOnPanStoppedListener(new OnPanStoppedListener() {
 
             @Override
-            public void onPanStop() {
+            public void onPanStopped() {
                 // If within find and replace operation
                 if (withinFindReplace) {
                     // If the find and replace context popup is not showing
@@ -438,13 +440,20 @@ public class EditTextActivity extends AppCompatActivity {
     }
 
     private void setWordWrap(boolean wordWrap) {
+        // Get editor layout parameters
+        ViewGroup.LayoutParams layoutParams = editor.getLayoutParams();
+
+        // If word wrap should be enabled
         if (wordWrap) {
-            // Limit editor width to screen width
-            editor.setMaxWidth(findViewById(android.R.id.content).getWidth());
+            // Make editor width match screen width
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         } else {
-            // Maximize max width
-            editor.setMaxWidth(Integer.MAX_VALUE);
+            // Allow editor to expand horizontally
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
         }
+
+        // Update editor layout parameters
+        editor.setLayoutParams(layoutParams);
     }
 
     private void updateTaskDescription() {
