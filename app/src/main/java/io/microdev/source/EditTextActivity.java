@@ -20,7 +20,6 @@ import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,8 +45,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.microdev.source.util.Callback;
-import io.microdev.source.util.DimenUtil;
 import io.microdev.source.widget.editortext.EditorText;
+
+import static io.microdev.source.util.DimenUtil.dpToPx;
 
 public class EditTextActivity extends AppCompatActivity {
 
@@ -147,7 +147,7 @@ public class EditTextActivity extends AppCompatActivity {
                 int widthCurrent = contentView.getMeasuredWidth();
 
                 // Convert 56dp to pixels for the calculations that follow
-                int _56dp = (int) DimenUtil.dpToPx(EditTextActivity.this, 56f);
+                int _56dp = (int) dpToPx(EditTextActivity.this, 56f);
 
                 // If popup width is not divisible by 56dp
                 if (widthCurrent % _56dp != 0) {
@@ -293,7 +293,7 @@ public class EditTextActivity extends AppCompatActivity {
                 int widthCurrent = contentView.getMeasuredWidth();
 
                 // Convert 56dp to pixels for the calculations that follow
-                int _56dp = (int) DimenUtil.dpToPx(EditTextActivity.this, 56f);
+                int _56dp = (int) dpToPx(EditTextActivity.this, 56f);
 
                 // If popup width is not divisible by 56dp
                 if (widthCurrent % _56dp != 0) {
@@ -508,9 +508,9 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set margins for name input
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-        layoutParams.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-        layoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        layoutParams.leftMargin = (int) dpToPx(this, 24f);
+        layoutParams.rightMargin = (int) dpToPx(this, 24f);
+        layoutParams.topMargin = (int) dpToPx(this, 10f);
         editTextName.setLayoutParams(layoutParams);
 
         // Add name input to content
@@ -765,10 +765,10 @@ public class EditTextActivity extends AppCompatActivity {
         RelativeLayout content = new RelativeLayout(this);
 
         // Set content padding as per Material design
-        int contentPaddingLeft = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-        int contentPaddingRight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-        int contentPaddingTop = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
-        int contentPaddingBottom = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        int contentPaddingLeft = (int) dpToPx(this, 24f);
+        int contentPaddingRight = (int) dpToPx(this, 24f);
+        int contentPaddingTop = (int) dpToPx(this, 10f);
+        int contentPaddingBottom = (int) dpToPx(this, 10f);
         content.setPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, contentPaddingBottom);
 
         // Text input for search text
@@ -789,7 +789,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set layout parameters for replacement input
         RelativeLayout.LayoutParams inputReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputReplaceLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
+        inputReplaceLayoutParams.topMargin = (int) dpToPx(this, 5f);
         inputReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputSearch.getId());
         inputReplace.setLayoutParams(inputReplaceLayoutParams);
 
@@ -801,7 +801,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set layout parameters for enable match case input
         RelativeLayout.LayoutParams inputEnableMatchCaseLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEnableMatchCaseLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics());
+        inputEnableMatchCaseLayoutParams.topMargin = (int) dpToPx(this, 10f);
         inputEnableMatchCaseLayoutParams.addRule(RelativeLayout.BELOW, inputReplace.getId());
         inputEnableMatchCase.setLayoutParams(inputEnableMatchCaseLayoutParams);
 
@@ -813,7 +813,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set layout parameters for enable replace input
         RelativeLayout.LayoutParams inputEnableReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEnableReplaceLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5f, getResources().getDisplayMetrics());
+        inputEnableReplaceLayoutParams.topMargin = (int) dpToPx(this, 5f);
         inputEnableReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchCase.getId());
         inputEnableReplace.setLayoutParams(inputEnableReplaceLayoutParams);
 
