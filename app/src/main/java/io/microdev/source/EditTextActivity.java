@@ -95,8 +95,8 @@ public class EditTextActivity extends AppCompatActivity {
         // Set action bar to custom app bar
         setSupportActionBar(appBar);
 
-        // Enable action bar up arrow to behave as home button
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // Enable action bar up arrow
+        appBar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_ab_back_mtrl_am_alpha);
 
         // Listen for editor text changes
         editor.addTextChangedListener(new TextWatcher() {
