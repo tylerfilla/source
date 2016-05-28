@@ -58,8 +58,8 @@ public class EditTextActivity extends AppCompatActivity {
     private PanView panView;
     private EditorText editor;
 
-    private AppCompatPopupWindow popupMoreOptions;
-    private AppCompatPopupWindow popupContextFindReplace;
+    private PopupMoreOptions popupMoreOptions;
+    private PopupContextFindReplace popupContextFindReplace;
 
     private boolean withinFindReplace;
     private int findReplaceSelectionStart;
@@ -126,58 +126,7 @@ public class EditTextActivity extends AppCompatActivity {
         });
 
         // Create find and replace context menu
-        popupContextFindReplace = new AppCompatPopupWindow(this, null, android.support.v7.appcompat.R.attr.popupMenuStyle) {
-
-            @Override
-            public void update() {
-                // Get popup content view
-                ViewGroup contentView = (ViewGroup) getContentView();
-
-                /* Resize window in a Material-ish fashion */
-
-                // Set minimum widths of all first-level children to zero
-                for (int i = 0; i < contentView.getChildCount(); i++) {
-                    contentView.getChildAt(i).setMinimumWidth(0);
-                }
-
-                // Measure content view
-                contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-                // Get current width
-                int widthCurrent = contentView.getMeasuredWidth();
-
-                // Convert 56dp to pixels for the calculations that follow
-                int _56dp = (int) dpToPx(EditTextActivity.this, 56f);
-
-                // If popup width is not divisible by 56dp
-                if (widthCurrent % _56dp != 0) {
-                    // Recalculate width as the next multiple of 56dp (as per Material guidelines)
-                    int widthNew = widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp;
-
-                    // Update popup width
-                    setWidth(widthNew);
-
-                    // Set minimum widths of all first-level children to explicitly match popup
-                    for (int i = 0; i < contentView.getChildCount(); i++) {
-                        contentView.getChildAt(i).setMinimumWidth(widthNew);
-                    }
-                }
-
-                // Continue with standard update procedure
-                super.update();
-            }
-
-        };
-
-        // Inflate find and replace context menu
-        popupContextFindReplace.setContentView(getLayoutInflater().inflate(R.layout.activity_edit_text_context_find_replace_popup, null));
-
-        // Height and width wrap content
-        popupContextFindReplace.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        popupContextFindReplace.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        // Make outside touchable to dismiss popup when touching outside its window
-        popupContextFindReplace.setOutsideTouchable(true);
+        popupContextFindReplace = new PopupContextFindReplace(this);
 
         // Listen for pan changes
         panView.addOnPanChangedListener(new OnPanChangedListener() {
@@ -255,81 +204,7 @@ public class EditTextActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.activity_edit_text_opts, menu);
 
         // Create more options popup window
-        popupMoreOptions = new AppCompatPopupWindow(this, null, android.support.v7.appcompat.R.attr.popupMenuStyle) {
-
-            @Override
-            public void update() {
-                // Get popup content view
-                ViewGroup contentView = (ViewGroup) getContentView();
-
-                /* Update dynamic content */
-
-                // Get more options popup filename item
-                ViewGroup itemFilename = (ViewGroup) contentView.findViewById(R.id.activityEditTextMoreOptsPopupItemFilename);
-
-                // Get filename item text view
-                TextView itemFilenameText = (TextView) itemFilename.findViewWithTag("text");
-
-                // Build new content for text view
-                SpannableStringBuilder itemFilenameTextContent = new SpannableStringBuilder();
-                itemFilenameTextContent.append(filename);
-                itemFilenameTextContent.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                itemFilenameTextContent.setSpan(new RelativeSizeSpan(1.2f), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                // Set as item text
-                itemFilenameText.setText(itemFilenameTextContent);
-
-                /* Resize window in a Material-ish fashion */
-
-                // Set minimum widths of all first-level children to zero
-                for (int i = 0; i < contentView.getChildCount(); i++) {
-                    contentView.getChildAt(i).setMinimumWidth(0);
-                }
-
-                // Measure content view
-                contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-                // Get current width
-                int widthCurrent = contentView.getMeasuredWidth();
-
-                // Convert 56dp to pixels for the calculations that follow
-                int _56dp = (int) dpToPx(EditTextActivity.this, 56f);
-
-                // If popup width is not divisible by 56dp
-                if (widthCurrent % _56dp != 0) {
-                    // Recalculate width as the next multiple of 56dp (as per Material guidelines)
-                    int widthNew = widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp;
-
-                    // Update popup width
-                    setWidth(widthNew);
-
-                    // Set minimum widths of all first-level children to explicitly match popup
-                    for (int i = 0; i < contentView.getChildCount(); i++) {
-                        contentView.getChildAt(i).setMinimumWidth(widthNew);
-                    }
-                }
-
-                // Continue with standard update procedure
-                super.update();
-            }
-
-        };
-
-        // Inflate more options popup content layout
-        popupMoreOptions.setContentView(getLayoutInflater().inflate(R.layout.activity_edit_text_more_opts_popup, null));
-
-        // Height and width wrap content
-        popupMoreOptions.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        popupMoreOptions.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        // Overlap the more options button
-        popupMoreOptions.setSupportOverlapAnchor(true);
-
-        // Make outside touchable to dismiss popup when touching outside its window
-        popupMoreOptions.setOutsideTouchable(true);
-
-        // Initial update
-        popupMoreOptions.update();
+        popupMoreOptions = new PopupMoreOptions(this);
 
         return super.onCreateOptionsMenu(menu);
     }
@@ -581,18 +456,18 @@ public class EditTextActivity extends AppCompatActivity {
 
     private void promptFindReplace() {
         // Display find and replace dialog
-        displayDialogFindReplace(new Callback<DialogResultFindReplace>() {
+        displayDialogFindReplace(new Callback<FindReplaceDialogResult>() {
 
             @Override
-            public void ring(final DialogResultFindReplace resultDialog) {
+            public void ring(final FindReplaceDialogResult resultDialog) {
                 // Appears to detach keyboard from editor enough to not make scrolling spazzy
                 ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(editor.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
                 // Find occurrences in editor
-                findInEditor(resultDialog.getSearch(), 0, false, !resultDialog.isEnableMatchCase(), new Callback<ResultFindInEditor>() {
+                findInEditor(resultDialog.getSearch(), 0, false, !resultDialog.isEnableMatchCase(), new Callback<EditorFindResult>() {
 
                     @Override
-                    public void ring(final ResultFindInEditor resultFind) {
+                    public void ring(final EditorFindResult resultFind) {
                         // If reached end of occurrences
                         if (resultFind.getOffset() == -1) {
                             // Cancel find and replace operation
@@ -666,7 +541,7 @@ public class EditTextActivity extends AppCompatActivity {
                                     editor.getText().replace(findReplaceSelectionStart, findReplaceSelectionEnd, resultDialog.getReplace());
 
                                     // Replace occurrence
-                                    resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.REPLACE, resultDialog.getReplace().length() - resultDialog.getSearch().length()));
+                                    resultFind.dispatchResponse(new EditorFindResult.Response(EditorFindResult.Response.Type.REPLACE, resultDialog.getReplace().length() - resultDialog.getSearch().length()));
                                 }
 
                             });
@@ -680,7 +555,7 @@ public class EditTextActivity extends AppCompatActivity {
                                     popupContextFindReplace.dismiss();
 
                                     // Move to next occurrence
-                                    resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.NEXT, null));
+                                    resultFind.dispatchResponse(new EditorFindResult.Response(EditorFindResult.Response.Type.NEXT, null));
                                 }
 
                             });
@@ -694,7 +569,7 @@ public class EditTextActivity extends AppCompatActivity {
                                     popupContextFindReplace.dismiss();
 
                                     // Move to previous occurrence
-                                    resultFind.dispatchResponse(new ResultFindInEditor.Response(ResultFindInEditor.Response.Type.PREVIOUS, null));
+                                    resultFind.dispatchResponse(new EditorFindResult.Response(EditorFindResult.Response.Type.PREVIOUS, null));
                                 }
 
                             });
@@ -754,7 +629,7 @@ public class EditTextActivity extends AppCompatActivity {
     }
 
     @SuppressWarnings("ResourceType")
-    private void displayDialogFindReplace(final Callback<DialogResultFindReplace> callback) {
+    private void displayDialogFindReplace(final Callback<FindReplaceDialogResult> callback) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -838,7 +713,7 @@ public class EditTextActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 // Create a package for result data
-                DialogResultFindReplace result = new DialogResultFindReplace();
+                FindReplaceDialogResult result = new FindReplaceDialogResult();
                 result.setSearch(inputSearch.getText().toString());
                 result.setReplace(inputReplace.getText().toString());
                 result.setEnableMatchCase(checkState[0]);
@@ -1020,7 +895,7 @@ public class EditTextActivity extends AppCompatActivity {
         }
     }
 
-    private void findInEditor(String search, int start, boolean reverse, boolean ignoreCase, final Callback<ResultFindInEditor> callback) {
+    private void findInEditor(String search, int start, boolean reverse, boolean ignoreCase, final Callback<EditorFindResult> callback) {
         // Get editor text
         String text = editor.getText().toString();
 
@@ -1045,7 +920,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Notify caller if no occurrences were found with an invalid result
         if (occurrenceOffsetList.isEmpty()) {
-            callback.ring(ResultFindInEditor.buildInvalidReference(occurrenceOffsetList.size()));
+            callback.ring(EditorFindResult.buildInvalidReference(occurrenceOffsetList.size()));
             return;
         }
 
@@ -1053,7 +928,7 @@ public class EditTextActivity extends AppCompatActivity {
         final int[] i = new int[] { 0 };
 
         // Create result to represent first occurrence
-        ResultFindInEditor resultFirst = new ResultFindInEditor();
+        EditorFindResult resultFirst = new EditorFindResult();
 
         // Configure first result
         resultFirst.setOffset(occurrenceOffsetList.get(i[0]));
@@ -1067,10 +942,10 @@ public class EditTextActivity extends AppCompatActivity {
         }
 
         // Create callback to receive first response
-        resultFirst.setResponseCallback(new Callback<ResultFindInEditor.Response>() {
+        resultFirst.setResponseCallback(new Callback<EditorFindResult.Response>() {
 
             @Override
-            public void ring(ResultFindInEditor.Response response) {
+            public void ring(EditorFindResult.Response response) {
                 // Next valid occurrences in either direction
                 int nextValidForward = -1;
                 int nextValidBackward = -1;
@@ -1139,7 +1014,7 @@ public class EditTextActivity extends AppCompatActivity {
                         i[0] = nextValidBackward;
                     } else {
                         // Notify caller of end of occurrences
-                        callback.ring(ResultFindInEditor.buildInvalidReference(occurrenceOffsetList.size()));
+                        callback.ring(EditorFindResult.buildInvalidReference(occurrenceOffsetList.size()));
                         return;
                     }
                     break;
@@ -1192,7 +1067,7 @@ public class EditTextActivity extends AppCompatActivity {
                 }
 
                 // Prepare next result
-                ResultFindInEditor resultNext = new ResultFindInEditor();
+                EditorFindResult resultNext = new EditorFindResult();
 
                 // Configure result
                 resultNext.setOffset(occurrenceOffsetList.get(i[0]));
@@ -1220,7 +1095,7 @@ public class EditTextActivity extends AppCompatActivity {
         callback.ring(resultFirst);
     }
 
-    private static class ResultFindInEditor {
+    private static class EditorFindResult {
 
         private int offset;
         private int occurrenceCurrent;
@@ -1233,7 +1108,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         private Callback<Response> responseCallback;
 
-        public ResultFindInEditor() {
+        public EditorFindResult() {
             offset = -1;
             occurrenceCurrent = -1;
             occurrenceTotal = 0;
@@ -1308,8 +1183,8 @@ public class EditTextActivity extends AppCompatActivity {
             responseCallback.ring(response);
         }
 
-        public static ResultFindInEditor buildInvalidReference(int occurrenceTotal) {
-            ResultFindInEditor result = new ResultFindInEditor();
+        public static EditorFindResult buildInvalidReference(int occurrenceTotal) {
+            EditorFindResult result = new EditorFindResult();
 
             result.setOffset(-1);
             result.setOccurrenceTotal(occurrenceTotal);
@@ -1347,14 +1222,14 @@ public class EditTextActivity extends AppCompatActivity {
 
     }
 
-    private static class DialogResultFindReplace {
+    private static class FindReplaceDialogResult {
 
         private String search;
         private String replace;
         private boolean enableMatchCase;
         private boolean enableReplace;
 
-        public DialogResultFindReplace() {
+        public FindReplaceDialogResult() {
             search = null;
             replace = null;
         }
@@ -1389,6 +1264,129 @@ public class EditTextActivity extends AppCompatActivity {
 
         public void setEnableReplace(boolean enableReplace) {
             this.enableReplace = enableReplace;
+        }
+
+    }
+
+    private static abstract class PseudoPopupMenu extends AppCompatPopupWindow {
+
+        protected EditTextActivity editTextActivity;
+
+        protected PseudoPopupMenu(EditTextActivity editTextActivity) {
+            super(editTextActivity, null, android.support.v7.appcompat.R.attr.popupMenuStyle);
+
+            this.editTextActivity = editTextActivity;
+
+            // Height and width wrap content
+            setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            // Make outside touchable to dismiss popup when touching outside its window
+            setOutsideTouchable(true);
+        }
+
+        @Override
+        public void update() {
+            // Resize window in Material fashion
+            resize();
+
+            // Update like normal
+            super.update();
+        }
+
+        private void resize() {
+            // Get popup content view
+            ViewGroup contentView = (ViewGroup) getContentView();
+
+            // Set minimum widths of all first-level children to zero
+            for (int i = 0; i < contentView.getChildCount(); i++) {
+                contentView.getChildAt(i).setMinimumWidth(0);
+            }
+
+            // Measure content view
+            contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+
+            // Get current width
+            int widthCurrent = contentView.getMeasuredWidth();
+
+            // Convert 56dp to pixels for the calculations that follow
+            int _56dp = (int) dpToPx(editTextActivity, 56f);
+
+            // If popup width is not divisible by 56dp
+            if (widthCurrent % _56dp != 0) {
+                // Recalculate width as the next multiple of 56dp (as per Material guidelines)
+                int widthNew = widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp;
+
+                // Update popup width
+                setWidth(widthNew);
+
+                // Set minimum widths of all first-level children to explicitly match popup
+                for (int i = 0; i < contentView.getChildCount(); i++) {
+                    contentView.getChildAt(i).setMinimumWidth(widthNew);
+                }
+            }
+        }
+
+    }
+
+    private static class PopupMoreOptions extends PseudoPopupMenu {
+
+        private EditTextActivity editTextActivity;
+
+        public PopupMoreOptions(EditTextActivity editTextActivity) {
+            super(editTextActivity);
+
+            this.editTextActivity = editTextActivity;
+
+            // Inflate more options popup content layout
+            setContentView(editTextActivity.getLayoutInflater().inflate(R.layout.activity_edit_text_more_opts_popup, null));
+
+            // Overlap the more options button
+            setSupportOverlapAnchor(true);
+
+            // Initial update
+            update();
+        }
+
+        @Override
+        public void update() {
+            // Get popup content view
+            ViewGroup contentView = (ViewGroup) getContentView();
+
+            // Get more options popup filename item
+            ViewGroup itemFilename = (ViewGroup) contentView.findViewById(R.id.activityEditTextMoreOptsPopupItemFilename);
+
+            // Get filename item text view
+            TextView itemFilenameText = (TextView) itemFilename.findViewWithTag("text");
+
+            // Build new content for text view
+            SpannableStringBuilder itemFilenameTextContent = new SpannableStringBuilder();
+            itemFilenameTextContent.append(editTextActivity.filename);
+            itemFilenameTextContent.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            itemFilenameTextContent.setSpan(new RelativeSizeSpan(1.2f), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // Set as item text
+            itemFilenameText.setText(itemFilenameTextContent);
+
+            super.update();
+        }
+
+    }
+
+    private static class PopupContextFindReplace extends PseudoPopupMenu {
+
+        private EditTextActivity editTextActivity;
+
+        public PopupContextFindReplace(EditTextActivity editTextActivity) {
+            super(editTextActivity);
+
+            this.editTextActivity = editTextActivity;
+
+            // Inflate find and replace context menu
+            setContentView(editTextActivity.getLayoutInflater().inflate(R.layout.activity_edit_text_context_find_replace_popup, null));
+
+            // Initial update
+            update();
         }
 
     }
