@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.microdev.source.util.Callback;
+import io.microdev.source.util.IdGen;
 import io.microdev.source.widget.editortext.EditorText;
 
 import static io.microdev.source.util.DimenUtil.dpToPx;
@@ -648,7 +649,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Text input for search text
         final EditText inputSearch = new EditText(this);
-        inputSearch.setId(1);
+        inputSearch.setId(IdGen.next());
         inputSearch.setHint(R.string.dialog_activity_edit_text_find_input_search_hint);
         inputSearch.setSingleLine();
 
@@ -657,7 +658,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Create a text input for replacement text
         final EditText inputReplace = new EditText(this);
-        inputReplace.setId(2);
+        inputReplace.setId(IdGen.next());
         inputReplace.setHint(R.string.dialog_activity_edit_text_find_input_replace_hint);
         inputReplace.setVisibility(View.GONE);
         inputReplace.setSingleLine();
@@ -670,7 +671,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Checkbox input to enable case matching
         final CheckBox inputEnableMatchCase = new CheckBox(this);
-        inputEnableMatchCase.setId(3);
+        inputEnableMatchCase.setId(IdGen.next());
         inputEnableMatchCase.setText(R.string.dialog_activity_edit_text_find_input_enable_match_case_hint);
         inputEnableMatchCase.setChecked(false);
 
@@ -682,7 +683,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Checkbox input to enable replacement
         final CheckBox inputEnableReplace = new CheckBox(this);
-        inputEnableReplace.setId(4);
+        inputEnableReplace.setId(IdGen.next());
         inputEnableReplace.setText(R.string.dialog_activity_edit_text_find_input_enable_replace_hint);
         inputEnableReplace.setChecked(false);
 
