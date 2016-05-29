@@ -17,6 +17,13 @@
     <string name="dialog_activity_edit_text_rename_button_cancel_text">Cancel</string>
     <string name="dialog_activity_edit_text_rename_button_rename_text">Rename</string>
 
+    <!-- Found in edit text activity goto dialog -->
+    <string name="dialog_activity_edit_text_goto_title">Go To</string>
+    <string name="dialog_activity_edit_text_goto_input_enable_line_input_hint">Go to line</string>
+    <string name="dialog_activity_edit_text_goto_input_enable_offset_input_hint">Go to character</string>
+    <string name="dialog_activity_edit_text_goto_button_negative_text">Cancel</string>
+    <string name="dialog_activity_edit_text_goto_button_positive_text">Go to</string>
+
     <!-- Found in edit text activity find and replace dialog -->
     <string name="dialog_activity_edit_text_find_title">Find and Replace</string>
     <string name="dialog_activity_edit_text_find_input_search_hint">Search for...</string>

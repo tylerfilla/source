@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatPopupWindow;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -30,9 +31,11 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gmail.tylerfilla.widget.panview.OnPanChangedListener;
 import com.gmail.tylerfilla.widget.panview.OnPanStoppedListener;
@@ -276,7 +279,7 @@ public class EditTextActivity extends AppCompatActivity {
         case R.id.activityEditTextMoreOptsPopupItemGoto:
             // Goto item selected
             // Not implemented
-            Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show();
+            promptGoto();
             break;
         case R.id.activityEditTextMoreOptsPopupItemFind:
             // Find item selected
@@ -455,6 +458,123 @@ public class EditTextActivity extends AppCompatActivity {
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
+    private void promptGoto() {
+        // Display goto dialog
+        displayDialogGoto(new Callback<Integer>() {
+
+            @Override
+            public void ring(Integer offset) {
+                System.out.println("Go to offset " + offset);
+            }
+
+        });
+    }
+
+    private void displayDialogGoto(final Callback<Integer> callback) {
+        // Construct a new dialog builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Set dialog title
+        builder.setTitle(R.string.dialog_activity_edit_text_goto_title);
+
+        // Content layout
+        LinearLayout content = new LinearLayout(this);
+
+        // Set content padding as per Material design
+        int contentPaddingLeft = (int) dpToPx(this, 24f);
+        int contentPaddingRight = (int) dpToPx(this, 24f);
+        int contentPaddingTop = (int) dpToPx(this, 10f);
+        int contentPaddingBottom = (int) dpToPx(this, 10f);
+        content.setPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, contentPaddingBottom);
+
+        // Set vertical orientation
+        content.setOrientation(LinearLayout.VERTICAL);
+
+        // Text input for goto
+        final EditText inputGoto = new EditText(this);
+        inputGoto.setId(IdGen.next());
+        inputGoto.setInputType(InputType.TYPE_CLASS_NUMBER);
+        inputGoto.setSingleLine();
+
+        final RadioGroup inputGroupTypeGoto = new RadioGroup(this);
+        inputGroupTypeGoto.setId(IdGen.next());
+        inputGroupTypeGoto.setOrientation(LinearLayout.VERTICAL);
+
+        LinearLayout.LayoutParams inputGroupTypeGotoLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputGroupTypeGotoLayoutParams.topMargin = (int) dpToPx(this, 5f);
+        inputGroupTypeGoto.setLayoutParams(inputGroupTypeGotoLayoutParams);
+
+        // Radio button to enable line input
+        final RadioButton inputEnableLineInput = new RadioButton(this);
+        inputEnableLineInput.setId(IdGen.next());
+        inputEnableLineInput.setText(R.string.dialog_activity_edit_text_goto_input_enable_line_input_hint);
+        inputEnableLineInput.setChecked(true);
+
+        // Add enable line input radio button to group
+        inputGroupTypeGoto.addView(inputEnableLineInput);
+
+        // Radio button to enable offset input
+        final RadioButton inputEnableOffsetInput = new RadioButton(this);
+        inputEnableOffsetInput.setId(IdGen.next());
+        inputEnableOffsetInput.setText(R.string.dialog_activity_edit_text_goto_input_enable_offset_input_hint);
+        inputEnableOffsetInput.setChecked(false);
+
+        // Add enable offset input radio button to group
+        inputGroupTypeGoto.addView(inputEnableOffsetInput);
+
+        // Add inputs to content
+        content.addView(inputGoto);
+        content.addView(inputGroupTypeGoto);
+
+        // Add content to dialog
+        builder.setView(content);
+
+        // Set up negative button
+        builder.setNegativeButton(R.string.dialog_activity_edit_text_goto_button_negative_text, null);
+
+        // Set up positive button
+        builder.setPositiveButton(R.string.dialog_activity_edit_text_goto_button_positive_text, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Target character offset
+                int offset;
+
+                // Calculate offset based on selected type
+                if (inputGroupTypeGoto.getCheckedRadioButtonId() == inputEnableLineInput.getId()) {
+                    offset = -1;
+                } else if (inputGroupTypeGoto.getCheckedRadioButtonId() == inputEnableOffsetInput.getId()) {
+                    offset = Integer.parseInt(inputGoto.getText().toString());
+                } else {
+                    offset = -1;
+                }
+
+                // Send offset to caller
+                callback.ring(offset);
+            }
+
+        });
+
+        // Build the dialog
+        final AlertDialog dialog = builder.create();
+
+        // Listen for dialog show
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                // Focus offset input and show the soft keyboard
+                if (inputGoto.requestFocus()) {
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(inputGoto, InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+
+        });
+
+        // Show the dialog
+        dialog.show();
+    }
+
     private void promptFindReplace() {
         // Display find and replace dialog
         displayDialogFindReplace(new Callback<FindReplaceDialogResult>() {
@@ -629,7 +749,6 @@ public class EditTextActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressWarnings("ResourceType")
     private void displayDialogFindReplace(final Callback<FindReplaceDialogResult> callback) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

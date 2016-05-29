@@ -4,11 +4,17 @@ import android.support.annotation.IdRes;
 
 public class IdGen {
 
-    private static int next = 0;
+    private static int id;
 
     @IdRes
     public static int next() {
-        return next++;
+        // Return current ID and increment for next use
+        return id++;
+    }
+
+    static {
+        // Start at 0
+        id = 0;
     }
 
 }
