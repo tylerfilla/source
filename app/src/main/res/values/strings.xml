@@ -19,8 +19,10 @@
 
     <!-- Found in edit text activity goto dialog -->
     <string name="dialog_activity_edit_text_goto_title">Go To</string>
-    <string name="dialog_activity_edit_text_goto_input_enable_line_input_hint">Go to line</string>
-    <string name="dialog_activity_edit_text_goto_input_enable_offset_input_hint">Go to character</string>
+    <string name="dialog_activity_edit_text_goto_input_goto_hint_type_line">Go to line...</string>
+    <string name="dialog_activity_edit_text_goto_input_goto_hint_type_offset">Go to character...</string>
+    <string name="dialog_activity_edit_text_goto_input_enable_line_input_text">Go to line</string>
+    <string name="dialog_activity_edit_text_goto_input_enable_offset_input_text">Go to character</string>
     <string name="dialog_activity_edit_text_goto_button_negative_text">Cancel</string>
     <string name="dialog_activity_edit_text_goto_button_positive_text">Go to</string>
 

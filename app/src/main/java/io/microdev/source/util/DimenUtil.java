@@ -12,4 +12,12 @@ public class DimenUtil {
         return px / context.getResources().getDisplayMetrics().density;
     }
 
+    public static int dpToPxI(Context context, float dp) {
+        return (int) dpToPx(context, dp);
+    }
+
+    public static int pxToDpI(Context context, float px) {
+        return (int) pxToDp(context, px);
+    }
+
 }

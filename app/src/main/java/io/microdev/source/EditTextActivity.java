@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatPopupWindow;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
@@ -49,9 +48,10 @@ import java.util.Map;
 
 import io.microdev.source.util.Callback;
 import io.microdev.source.util.IdGen;
+import io.microdev.source.widget.PseudoPopupMenu;
 import io.microdev.source.widget.editortext.EditorText;
 
-import static io.microdev.source.util.DimenUtil.dpToPx;
+import static io.microdev.source.util.DimenUtil.dpToPxI;
 
 public class EditTextActivity extends AppCompatActivity {
 
@@ -387,9 +387,9 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set margins for name input
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.leftMargin = (int) dpToPx(this, 24f);
-        layoutParams.rightMargin = (int) dpToPx(this, 24f);
-        layoutParams.topMargin = (int) dpToPx(this, 10f);
+        layoutParams.leftMargin = dpToPxI(this, 24f);
+        layoutParams.rightMargin = dpToPxI(this, 24f);
+        layoutParams.topMargin = dpToPxI(this, 10f);
         editTextName.setLayoutParams(layoutParams);
 
         // Add name input to content
@@ -460,17 +460,17 @@ public class EditTextActivity extends AppCompatActivity {
 
     private void promptGoto() {
         // Display goto dialog
-        displayDialogGoto(new Callback<Integer>() {
+        displayDialogGoto(new Callback<GotoDialogResult>() {
 
             @Override
-            public void ring(Integer offset) {
-                System.out.println("Go to offset " + offset);
+            public void ring(GotoDialogResult result) {
+                System.out.println("Go to offset " + result.getValue());
             }
 
         });
     }
 
-    private void displayDialogGoto(final Callback<Integer> callback) {
+    private void displayDialogGoto(final Callback<GotoDialogResult> callback) {
         // Construct a new dialog builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -480,12 +480,8 @@ public class EditTextActivity extends AppCompatActivity {
         // Content layout
         LinearLayout content = new LinearLayout(this);
 
-        // Set content padding as per Material design
-        int contentPaddingLeft = (int) dpToPx(this, 24f);
-        int contentPaddingRight = (int) dpToPx(this, 24f);
-        int contentPaddingTop = (int) dpToPx(this, 10f);
-        int contentPaddingBottom = (int) dpToPx(this, 10f);
-        content.setPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, contentPaddingBottom);
+        // Set padding as per Material design
+        content.setPadding(dpToPxI(this, 24f), dpToPxI(this, 10f), dpToPxI(this, 24f), dpToPxI(this, 10f));
 
         // Set vertical orientation
         content.setOrientation(LinearLayout.VERTICAL);
@@ -493,38 +489,36 @@ public class EditTextActivity extends AppCompatActivity {
         // Text input for goto
         final EditText inputGoto = new EditText(this);
         inputGoto.setId(IdGen.next());
+        inputGoto.setHint(R.string.dialog_activity_edit_text_goto_input_goto_hint_type_line);
         inputGoto.setInputType(InputType.TYPE_CLASS_NUMBER);
         inputGoto.setSingleLine();
 
-        final RadioGroup inputGroupTypeGoto = new RadioGroup(this);
-        inputGroupTypeGoto.setId(IdGen.next());
-        inputGroupTypeGoto.setOrientation(LinearLayout.VERTICAL);
+        // Radio group to choose goto type
+        final RadioGroup inputGroupChooseTypeGoto = new RadioGroup(this);
+        inputGroupChooseTypeGoto.setId(IdGen.next());
+        inputGroupChooseTypeGoto.setOrientation(LinearLayout.VERTICAL);
 
-        LinearLayout.LayoutParams inputGroupTypeGotoLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputGroupTypeGotoLayoutParams.topMargin = (int) dpToPx(this, 5f);
-        inputGroupTypeGoto.setLayoutParams(inputGroupTypeGotoLayoutParams);
+        LinearLayout.LayoutParams inputGroupChooseTypeGotoLP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputGroupChooseTypeGotoLP.topMargin = dpToPxI(this, 5f);
+        inputGroupChooseTypeGoto.setLayoutParams(inputGroupChooseTypeGotoLP);
 
         // Radio button to enable line input
-        final RadioButton inputEnableLineInput = new RadioButton(this);
-        inputEnableLineInput.setId(IdGen.next());
-        inputEnableLineInput.setText(R.string.dialog_activity_edit_text_goto_input_enable_line_input_hint);
-        inputEnableLineInput.setChecked(true);
-
-        // Add enable line input radio button to group
-        inputGroupTypeGoto.addView(inputEnableLineInput);
+        final RadioButton inputChooseGotoTypeLine = new RadioButton(this);
+        inputChooseGotoTypeLine.setId(IdGen.next());
+        inputChooseGotoTypeLine.setText(R.string.dialog_activity_edit_text_goto_input_enable_line_input_text);
+        inputChooseGotoTypeLine.setChecked(true);
+        inputGroupChooseTypeGoto.addView(inputChooseGotoTypeLine);
 
         // Radio button to enable offset input
-        final RadioButton inputEnableOffsetInput = new RadioButton(this);
-        inputEnableOffsetInput.setId(IdGen.next());
-        inputEnableOffsetInput.setText(R.string.dialog_activity_edit_text_goto_input_enable_offset_input_hint);
-        inputEnableOffsetInput.setChecked(false);
-
-        // Add enable offset input radio button to group
-        inputGroupTypeGoto.addView(inputEnableOffsetInput);
+        final RadioButton inputChooseGotoTypeOffset = new RadioButton(this);
+        inputChooseGotoTypeOffset.setId(IdGen.next());
+        inputChooseGotoTypeOffset.setText(R.string.dialog_activity_edit_text_goto_input_enable_offset_input_text);
+        inputChooseGotoTypeOffset.setChecked(false);
+        inputGroupChooseTypeGoto.addView(inputChooseGotoTypeOffset);
 
         // Add inputs to content
         content.addView(inputGoto);
-        content.addView(inputGroupTypeGoto);
+        content.addView(inputGroupChooseTypeGoto);
 
         // Add content to dialog
         builder.setView(content);
@@ -537,20 +531,18 @@ public class EditTextActivity extends AppCompatActivity {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                // Target character offset
-                int offset;
+                GotoDialogResult result = new GotoDialogResult();
 
-                // Calculate offset based on selected type
-                if (inputGroupTypeGoto.getCheckedRadioButtonId() == inputEnableLineInput.getId()) {
-                    offset = -1;
-                } else if (inputGroupTypeGoto.getCheckedRadioButtonId() == inputEnableOffsetInput.getId()) {
-                    offset = Integer.parseInt(inputGoto.getText().toString());
-                } else {
-                    offset = -1;
+                result.setValue(Integer.parseInt(inputGoto.getText().toString()));
+
+                if (inputGroupChooseTypeGoto.getCheckedRadioButtonId() == inputChooseGotoTypeLine.getId()) {
+                    result.setType(GotoDialogResult.GotoType.LINE);
+                } else if (inputGroupChooseTypeGoto.getCheckedRadioButtonId() == inputChooseGotoTypeOffset.getId()) {
+                    result.setType(GotoDialogResult.GotoType.OFFSET);
                 }
 
                 // Send offset to caller
-                callback.ring(offset);
+                callback.ring(result);
             }
 
         });
@@ -571,8 +563,48 @@ public class EditTextActivity extends AppCompatActivity {
 
         });
 
+        // Listen for goto type changes
+        inputGroupChooseTypeGoto.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == inputChooseGotoTypeLine.getId()) {
+                    // Show line hint text on goto input
+                    inputGoto.setHint(R.string.dialog_activity_edit_text_goto_input_goto_hint_type_line);
+                } else if (checkedId == inputChooseGotoTypeOffset.getId()) {
+                    // Show offset hint text on goto input
+                    inputGoto.setHint(R.string.dialog_activity_edit_text_goto_input_goto_hint_type_offset);
+                }
+            }
+
+        });
+
+        inputGoto.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (inputGoto.length() > 0) {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+                } else {
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+
+        });
+
         // Show the dialog
         dialog.show();
+
+        // Initially disable the goto button
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
     }
 
     private void promptFindReplace() {
@@ -760,10 +792,10 @@ public class EditTextActivity extends AppCompatActivity {
         RelativeLayout content = new RelativeLayout(this);
 
         // Set content padding as per Material design
-        int contentPaddingLeft = (int) dpToPx(this, 24f);
-        int contentPaddingRight = (int) dpToPx(this, 24f);
-        int contentPaddingTop = (int) dpToPx(this, 10f);
-        int contentPaddingBottom = (int) dpToPx(this, 10f);
+        int contentPaddingLeft = dpToPxI(this, 24f);
+        int contentPaddingRight = dpToPxI(this, 24f);
+        int contentPaddingTop = dpToPxI(this, 10f);
+        int contentPaddingBottom = dpToPxI(this, 10f);
         content.setPadding(contentPaddingLeft, contentPaddingTop, contentPaddingRight, contentPaddingBottom);
 
         // Text input for search text
@@ -784,7 +816,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set layout parameters for replacement input
         RelativeLayout.LayoutParams inputReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputReplaceLayoutParams.topMargin = (int) dpToPx(this, 5f);
+        inputReplaceLayoutParams.topMargin = dpToPxI(this, 5f);
         inputReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputSearch.getId());
         inputReplace.setLayoutParams(inputReplaceLayoutParams);
 
@@ -796,7 +828,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set layout parameters for enable match case input
         RelativeLayout.LayoutParams inputEnableMatchCaseLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEnableMatchCaseLayoutParams.topMargin = (int) dpToPx(this, 10f);
+        inputEnableMatchCaseLayoutParams.topMargin = dpToPxI(this, 10f);
         inputEnableMatchCaseLayoutParams.addRule(RelativeLayout.BELOW, inputReplace.getId());
         inputEnableMatchCase.setLayoutParams(inputEnableMatchCaseLayoutParams);
 
@@ -808,7 +840,7 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Set layout parameters for enable replace input
         RelativeLayout.LayoutParams inputEnableReplaceLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        inputEnableReplaceLayoutParams.topMargin = (int) dpToPx(this, 5f);
+        inputEnableReplaceLayoutParams.topMargin = dpToPxI(this, 5f);
         inputEnableReplaceLayoutParams.addRule(RelativeLayout.BELOW, inputEnableMatchCase.getId());
         inputEnableReplace.setLayoutParams(inputEnableReplaceLayoutParams);
 
@@ -1342,6 +1374,41 @@ public class EditTextActivity extends AppCompatActivity {
 
     }
 
+    private static class GotoDialogResult {
+
+        private int value;
+        private GotoType type;
+
+        public GotoDialogResult() {
+            value = -1;
+            type = null;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        public GotoType getType() {
+            return type;
+        }
+
+        public void setType(GotoType type) {
+            this.type = type;
+        }
+
+        public enum GotoType {
+
+            LINE,
+            OFFSET
+
+        }
+
+    }
+
     private static class FindReplaceDialogResult {
 
         private String search;
@@ -1388,78 +1455,17 @@ public class EditTextActivity extends AppCompatActivity {
 
     }
 
-    private static abstract class PseudoPopupMenu extends AppCompatPopupWindow {
-
-        protected EditTextActivity editTextActivity;
-
-        protected PseudoPopupMenu(EditTextActivity editTextActivity) {
-            super(editTextActivity, null, android.support.v7.appcompat.R.attr.popupMenuStyle);
-
-            this.editTextActivity = editTextActivity;
-
-            // Height and width wrap content
-            setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-            setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-
-            // Make outside touchable to dismiss popup when touching outside its window
-            setOutsideTouchable(true);
-        }
-
-        @Override
-        public void update() {
-            // Resize window in Material fashion
-            resize();
-
-            // Update like normal
-            super.update();
-        }
-
-        private void resize() {
-            // Get popup content view
-            ViewGroup contentView = (ViewGroup) getContentView();
-
-            // Set minimum widths of all first-level children to zero
-            for (int i = 0; i < contentView.getChildCount(); i++) {
-                contentView.getChildAt(i).setMinimumWidth(0);
-            }
-
-            // Measure content view
-            contentView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-
-            // Get current width
-            int widthCurrent = contentView.getMeasuredWidth();
-
-            // Convert 56dp to pixels for the calculations that follow
-            int _56dp = (int) dpToPx(editTextActivity, 56f);
-
-            // If popup width is not divisible by 56dp
-            if (widthCurrent % _56dp != 0) {
-                // Recalculate width as the next multiple of 56dp (as per Material guidelines)
-                int widthNew = widthCurrent + _56dp - (widthCurrent + _56dp) % _56dp;
-
-                // Update popup width
-                setWidth(widthNew);
-
-                // Set minimum widths of all first-level children to explicitly match popup
-                for (int i = 0; i < contentView.getChildCount(); i++) {
-                    contentView.getChildAt(i).setMinimumWidth(widthNew);
-                }
-            }
-        }
-
-    }
-
     private static class PopupMoreOptions extends PseudoPopupMenu {
 
         private EditTextActivity editTextActivity;
 
-        public PopupMoreOptions(EditTextActivity editTextActivity) {
-            super(editTextActivity);
+        public PopupMoreOptions(EditTextActivity activity) {
+            super(activity);
 
-            this.editTextActivity = editTextActivity;
+            this.editTextActivity = activity;
 
             // Inflate more options popup content layout
-            setContentView(editTextActivity.getLayoutInflater().inflate(R.layout.activity_edit_text_more_opts_popup, null));
+            setContentView(activity.getLayoutInflater().inflate(R.layout.activity_edit_text_more_opts_popup, null));
 
             // Overlap the more options button
             setSupportOverlapAnchor(true);
@@ -1495,15 +1501,15 @@ public class EditTextActivity extends AppCompatActivity {
 
     private static class PopupContextFindReplace extends PseudoPopupMenu {
 
-        private EditTextActivity editTextActivity;
+        private EditTextActivity activity;
 
-        public PopupContextFindReplace(EditTextActivity editTextActivity) {
-            super(editTextActivity);
+        public PopupContextFindReplace(EditTextActivity activity) {
+            super(activity);
 
-            this.editTextActivity = editTextActivity;
+            this.activity = activity;
 
             // Inflate find and replace context menu
-            setContentView(editTextActivity.getLayoutInflater().inflate(R.layout.activity_edit_text_context_find_replace_popup, null));
+            setContentView(activity.getLayoutInflater().inflate(R.layout.activity_edit_text_context_find_replace_popup, null));
 
             // Initial update
             update();
