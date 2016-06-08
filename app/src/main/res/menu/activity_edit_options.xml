@@ -4,21 +4,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menuActivityEditTextOptsUndo"
+        android:id="@+id/activity_edit_menu_options_item_undo"
         android:icon="@drawable/ic_undo_white_24dp"
-        android:title="@string/menu_activity_edit_text_item_undo_title"
+        android:title="@string/activity_edit_menu_options_item_undo_title"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuActivityEditTextOptsRedo"
+        android:id="@+id/activity_edit_menu_options_item_redo"
         android:icon="@drawable/ic_redo_white_24dp"
-        android:title="@string/menu_activity_edit_text_item_redo_title"
+        android:title="@string/activity_edit_menu_options_item_redo_title"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/menuActivityEditTextOptsMoreOptions"
+        android:id="@+id/activity_edit_menu_options_item_more_options"
         android:icon="@drawable/ic_more_vert_white_24dp"
-        android:title="@string/menu_activity_edit_text_item_more_options_title"
+        android:title="@string/activity_edit_menu_options_item_more_options_title"
         app:showAsAction="always" />
 
 </menu>

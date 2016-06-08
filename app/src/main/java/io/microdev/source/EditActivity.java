@@ -49,18 +49,18 @@ import java.util.Map;
 import io.microdev.source.util.Callback;
 import io.microdev.source.util.IdGen;
 import io.microdev.source.widget.PseudoPopupMenu;
-import io.microdev.source.widget.editortext.EditorText;
+import io.microdev.source.widget.editor.Editor;
 
 import static io.microdev.source.util.DimenUtil.dpToPxI;
 
-public class EditTextActivity extends AppCompatActivity {
+public class EditActivity extends AppCompatActivity {
 
     private File file;
     private String filename;
 
     private Toolbar appBar;
     private PanView panView;
-    private EditorText editor;
+    private Editor editor;
 
     private PopupMoreOptions popupMoreOptions;
     private PopupContextFindReplace popupContextFindReplace;
@@ -74,7 +74,7 @@ public class EditTextActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Set activity layout
-        setContentView(R.layout.activity_edit_text);
+        setContentView(R.layout.activity_edit);
 
         // Check if a file URI was passed
         if (getIntent().getData() != null) {
@@ -92,9 +92,9 @@ public class EditTextActivity extends AppCompatActivity {
         }
 
         // Find stuff
-        appBar = (Toolbar) findViewById(R.id.activityEditTextAppBar);
-        panView = (PanView) findViewById(R.id.activityEditTextPanView);
-        editor = (EditorText) findViewById(R.id.activityEditTextEditor);
+        appBar = (Toolbar) findViewById(R.id.activity_edit_app_bar);
+        panView = (PanView) findViewById(R.id.activity_edit_panview);
+        editor = (Editor) findViewById(R.id.activity_edit_editor);
 
         // Set action bar to custom app bar
         setSupportActionBar(appBar);
@@ -205,7 +205,7 @@ public class EditTextActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate options menu
-        getMenuInflater().inflate(R.menu.activity_edit_text_opts, menu);
+        getMenuInflater().inflate(R.menu.activity_edit_options, menu);
 
         // Create more options popup window
         popupMoreOptions = new PopupMoreOptions(this);
@@ -222,20 +222,20 @@ public class EditTextActivity extends AppCompatActivity {
             // Finish activity
             finish();
             break;
-        case R.id.menuActivityEditTextOptsUndo:
+        case R.id.activity_edit_menu_options_item_undo:
             // Undo button pressed
             // Instruct editor to undo last operation
             editor.undo();
             break;
-        case R.id.menuActivityEditTextOptsRedo:
+        case R.id.activity_edit_menu_options_item_redo:
             // Redo button pressed
             // Instruct editor to redo last operation
             editor.redo();
             break;
-        case R.id.menuActivityEditTextOptsMoreOptions:
+        case R.id.activity_edit_menu_options_item_more_options:
             // More options button pressed
             // Show more options popup anchored to more options button
-            popupMoreOptions.showAsDropDown(findViewById(R.id.menuActivityEditTextOptsMoreOptions));
+            popupMoreOptions.showAsDropDown(findViewById(R.id.activity_edit_menu_options_item_more_options));
             break;
         default:
             // Delegate to super if not handled
@@ -271,17 +271,17 @@ public class EditTextActivity extends AppCompatActivity {
 
         // Switch against item ID to try to handle it
         switch (item.getId()) {
-        case R.id.activityEditTextMoreOptsPopupItemFilename:
+        case R.id.activity_edit_popup_more_options_item_rename:
             // Filename item selected
             // Enter rename prompt sequence
             promptRenameFile();
             break;
-        case R.id.activityEditTextMoreOptsPopupItemGoto:
+        case R.id.activity_edit_popup_more_options_item_goto:
             // Goto item selected
             // Not implemented
             promptGoto();
             break;
-        case R.id.activityEditTextMoreOptsPopupItemFind:
+        case R.id.activity_edit_popup_more_options_item_find_replace:
             // Find item selected
             // Enter find and replace sequence
             promptFindReplace();
@@ -344,10 +344,10 @@ public class EditTextActivity extends AppCompatActivity {
             // Resolve primary color
             int colorPrimary;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                colorPrimary = getResources().getColor(R.color.colorPrimary, getTheme());
+                colorPrimary = getResources().getColor(R.color.app_theme_color_primary, getTheme());
             } else {
                 // noinspection deprecation
-                colorPrimary = getResources().getColor(R.color.colorPrimary);
+                colorPrimary = getResources().getColor(R.color.app_theme_color_primary);
             }
 
             // Set task description
@@ -373,7 +373,7 @@ public class EditTextActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Set title from XML
-        builder.setTitle(R.string.dialog_activity_edit_text_rename_title);
+        builder.setTitle(R.string.activity_edit_dialog_rename_title);
 
         // Content layout for name input
         FrameLayout content = new FrameLayout(this);
@@ -399,10 +399,10 @@ public class EditTextActivity extends AppCompatActivity {
         builder.setView(content);
 
         // Set up cancel button
-        builder.setNegativeButton(R.string.dialog_activity_edit_text_rename_button_cancel_text, null);
+        builder.setNegativeButton(R.string.activity_edit_dialog_rename_button_cancel_text, null);
 
         // Set up OK button
-        builder.setPositiveButton(R.string.dialog_activity_edit_text_rename_button_rename_text, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.activity_edit_dialog_rename_button_rename_text, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -475,7 +475,7 @@ public class EditTextActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Set dialog title
-        builder.setTitle(R.string.dialog_activity_edit_text_goto_title);
+        builder.setTitle(R.string.activity_edit_dialog_goto_title);
 
         // Content layout
         LinearLayout content = new LinearLayout(this);
@@ -489,7 +489,7 @@ public class EditTextActivity extends AppCompatActivity {
         // Text input for goto
         final EditText inputGoto = new EditText(this);
         inputGoto.setId(IdGen.next());
-        inputGoto.setHint(R.string.dialog_activity_edit_text_goto_input_goto_hint_type_line);
+        inputGoto.setHint(R.string.activity_edit_dialog_goto_input_goto_hint_type_line);
         inputGoto.setInputType(InputType.TYPE_CLASS_NUMBER);
         inputGoto.setSingleLine();
 
@@ -505,14 +505,14 @@ public class EditTextActivity extends AppCompatActivity {
         // Radio button to enable line input
         final RadioButton inputChooseGotoTypeLine = new RadioButton(this);
         inputChooseGotoTypeLine.setId(IdGen.next());
-        inputChooseGotoTypeLine.setText(R.string.dialog_activity_edit_text_goto_input_enable_line_input_text);
+        inputChooseGotoTypeLine.setText(R.string.activity_edit_dialog_goto_input_enable_line_input_text);
         inputChooseGotoTypeLine.setChecked(true);
         inputGroupChooseTypeGoto.addView(inputChooseGotoTypeLine);
 
         // Radio button to enable offset input
         final RadioButton inputChooseGotoTypeOffset = new RadioButton(this);
         inputChooseGotoTypeOffset.setId(IdGen.next());
-        inputChooseGotoTypeOffset.setText(R.string.dialog_activity_edit_text_goto_input_enable_offset_input_text);
+        inputChooseGotoTypeOffset.setText(R.string.activity_edit_dialog_goto_input_enable_offset_input_text);
         inputChooseGotoTypeOffset.setChecked(false);
         inputGroupChooseTypeGoto.addView(inputChooseGotoTypeOffset);
 
@@ -524,10 +524,10 @@ public class EditTextActivity extends AppCompatActivity {
         builder.setView(content);
 
         // Set up negative button
-        builder.setNegativeButton(R.string.dialog_activity_edit_text_goto_button_negative_text, null);
+        builder.setNegativeButton(R.string.activity_edit_dialog_goto_button_negative_text, null);
 
         // Set up positive button
-        builder.setPositiveButton(R.string.dialog_activity_edit_text_goto_button_positive_text, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.activity_edit_dialog_goto_button_positive_text, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -570,10 +570,10 @@ public class EditTextActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (checkedId == inputChooseGotoTypeLine.getId()) {
                     // Show line hint text on goto input
-                    inputGoto.setHint(R.string.dialog_activity_edit_text_goto_input_goto_hint_type_line);
+                    inputGoto.setHint(R.string.activity_edit_dialog_goto_input_goto_hint_type_line);
                 } else if (checkedId == inputChooseGotoTypeOffset.getId()) {
                     // Show offset hint text on goto input
-                    inputGoto.setHint(R.string.dialog_activity_edit_text_goto_input_goto_hint_type_offset);
+                    inputGoto.setHint(R.string.activity_edit_dialog_goto_input_goto_hint_type_offset);
                 }
             }
 
@@ -637,10 +637,10 @@ public class EditTextActivity extends AppCompatActivity {
                             // If no occurrences were found
                             if (resultFind.getOccurrenceTotal() == 0) {
                                 // Notify the user
-                                Snackbar.make(editor, getString(R.string.operation_activity_edit_text_editor_search_result_snackbar_fail_text, resultDialog.getSearch()), Snackbar.LENGTH_SHORT).show();
+                                Snackbar.make(editor, getString(R.string.activity_edit_snackbar_find_replace_result_text_fail, resultDialog.getSearch()), Snackbar.LENGTH_SHORT).show();
                             } else {
                                 // No occurrences remain, notify user
-                                Snackbar.make(editor, R.string.operation_activity_edit_text_editor_search_result_snackbar_end_text, Snackbar.LENGTH_SHORT).show();
+                                Snackbar.make(editor, R.string.activity_edit_snackbar_find_replace_result_text_end, Snackbar.LENGTH_SHORT).show();
                             }
                         } else {
                             // Get offset from result
@@ -657,9 +657,9 @@ public class EditTextActivity extends AppCompatActivity {
                             View popupContentView = popupContextFindReplace.getContentView();
 
                             // Get contents and stuff
-                            View buttonReplace = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupReplace);
-                            View buttonNext = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupNext);
-                            View buttonPrevious = popupContentView.findViewById(R.id.activityEditTextContextFindReplacePopupPrevious);
+                            View buttonReplace = popupContentView.findViewById(R.id.activity_edit_popup_find_replace_item_replace);
+                            View buttonNext = popupContentView.findViewById(R.id.activity_edit_popup_find_replace_item_next);
+                            View buttonPrevious = popupContentView.findViewById(R.id.activity_edit_popup_find_replace_item_previous);
 
                             // Show replace button if replacing, else hide it
                             if (resultDialog.isEnableReplace()) {
@@ -786,7 +786,7 @@ public class EditTextActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Set title from XML
-        builder.setTitle(R.string.dialog_activity_edit_text_find_title);
+        builder.setTitle(R.string.activity_edit_dialog_find_replace_title);
 
         // Content layout
         RelativeLayout content = new RelativeLayout(this);
@@ -801,7 +801,7 @@ public class EditTextActivity extends AppCompatActivity {
         // Text input for search text
         final EditText inputSearch = new EditText(this);
         inputSearch.setId(IdGen.next());
-        inputSearch.setHint(R.string.dialog_activity_edit_text_find_input_search_hint);
+        inputSearch.setHint(R.string.activity_edit_dialog_find_replace_input_search_hint);
         inputSearch.setSingleLine();
 
         // Set layout parameters for search input
@@ -810,7 +810,7 @@ public class EditTextActivity extends AppCompatActivity {
         // Create a text input for replacement text
         final EditText inputReplace = new EditText(this);
         inputReplace.setId(IdGen.next());
-        inputReplace.setHint(R.string.dialog_activity_edit_text_find_input_replace_hint);
+        inputReplace.setHint(R.string.activity_edit_dialog_find_replace_input_replace_hint);
         inputReplace.setVisibility(View.GONE);
         inputReplace.setSingleLine();
 
@@ -823,7 +823,7 @@ public class EditTextActivity extends AppCompatActivity {
         // Checkbox input to enable case matching
         final CheckBox inputEnableMatchCase = new CheckBox(this);
         inputEnableMatchCase.setId(IdGen.next());
-        inputEnableMatchCase.setText(R.string.dialog_activity_edit_text_find_input_enable_match_case_hint);
+        inputEnableMatchCase.setText(R.string.activity_edit_dialog_find_replace_input_enable_match_case_hint);
         inputEnableMatchCase.setChecked(false);
 
         // Set layout parameters for enable match case input
@@ -835,7 +835,7 @@ public class EditTextActivity extends AppCompatActivity {
         // Checkbox input to enable replacement
         final CheckBox inputEnableReplace = new CheckBox(this);
         inputEnableReplace.setId(IdGen.next());
-        inputEnableReplace.setText(R.string.dialog_activity_edit_text_find_input_enable_replace_hint);
+        inputEnableReplace.setText(R.string.activity_edit_dialog_find_replace_input_enable_replace_hint);
         inputEnableReplace.setChecked(false);
 
         // Set layout parameters for enable replace input
@@ -857,10 +857,10 @@ public class EditTextActivity extends AppCompatActivity {
         final boolean[] checkState = new boolean[2];
 
         // Set up cancel button
-        builder.setNegativeButton(R.string.dialog_activity_edit_text_find_button_cancel_text, null);
+        builder.setNegativeButton(R.string.activity_edit_dialog_find_replace_button_negative_text, null);
 
         // Set up OK button
-        builder.setPositiveButton(R.string.dialog_activity_edit_text_find_button_find_text, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.activity_edit_dialog_find_replace_button_positive_text_find, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -918,7 +918,7 @@ public class EditTextActivity extends AppCompatActivity {
                     inputReplace.setVisibility(View.VISIBLE);
 
                     // Rename OK button to "replace"
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(R.string.dialog_activity_edit_text_find_button_replace_text);
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(R.string.activity_edit_dialog_find_replace_button_positive_text_replace);
 
                     // Transfer focus to replacement input if search input isn't empty
                     if (inputSearch.length() > 0) {
@@ -929,7 +929,7 @@ public class EditTextActivity extends AppCompatActivity {
                     inputReplace.setVisibility(View.GONE);
 
                     // Rename OK button to "find"
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(R.string.dialog_activity_edit_text_find_button_find_text);
+                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setText(R.string.activity_edit_dialog_find_replace_button_positive_text_find);
 
                     // Transfew focus to search input
                     inputSearch.requestFocus();
@@ -1457,15 +1457,15 @@ public class EditTextActivity extends AppCompatActivity {
 
     private static class PopupMoreOptions extends PseudoPopupMenu {
 
-        private EditTextActivity editTextActivity;
+        private EditActivity editActivity;
 
-        public PopupMoreOptions(EditTextActivity activity) {
+        public PopupMoreOptions(EditActivity activity) {
             super(activity);
 
-            this.editTextActivity = activity;
+            this.editActivity = activity;
 
             // Inflate more options popup content layout
-            setContentView(activity.getLayoutInflater().inflate(R.layout.activity_edit_text_more_opts_popup, null));
+            setContentView(activity.getLayoutInflater().inflate(R.layout.activity_edit_popup_more_options, null));
 
             // Overlap the more options button
             setSupportOverlapAnchor(true);
@@ -1480,14 +1480,14 @@ public class EditTextActivity extends AppCompatActivity {
             ViewGroup contentView = (ViewGroup) getContentView();
 
             // Get more options popup filename item
-            ViewGroup itemFilename = (ViewGroup) contentView.findViewById(R.id.activityEditTextMoreOptsPopupItemFilename);
+            ViewGroup itemFilename = (ViewGroup) contentView.findViewById(R.id.activity_edit_popup_more_options_item_rename);
 
             // Get filename item text view
             TextView itemFilenameText = (TextView) itemFilename.findViewWithTag("text");
 
             // Build new content for text view
             SpannableStringBuilder itemFilenameTextContent = new SpannableStringBuilder();
-            itemFilenameTextContent.append(editTextActivity.filename);
+            itemFilenameTextContent.append(editActivity.filename);
             itemFilenameTextContent.setSpan(new StyleSpan(Typeface.BOLD), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             itemFilenameTextContent.setSpan(new RelativeSizeSpan(1.2f), 0, itemFilenameTextContent.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
@@ -1501,15 +1501,15 @@ public class EditTextActivity extends AppCompatActivity {
 
     private static class PopupContextFindReplace extends PseudoPopupMenu {
 
-        private EditTextActivity activity;
+        private EditActivity activity;
 
-        public PopupContextFindReplace(EditTextActivity activity) {
+        public PopupContextFindReplace(EditActivity activity) {
             super(activity);
 
             this.activity = activity;
 
             // Inflate find and replace context menu
-            setContentView(activity.getLayoutInflater().inflate(R.layout.activity_edit_text_context_find_replace_popup, null));
+            setContentView(activity.getLayoutInflater().inflate(R.layout.activity_edit_popup_find_replace, null));
 
             // Initial update
             update();

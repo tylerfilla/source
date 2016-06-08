@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="colorPrimary">#ff607d8b</color>
-    <color name="colorPrimaryDark">#ff455a64</color>
-    <color name="colorAccent">#ff4fc3f7</color>
+    <color name="app_theme_color_accent">#ff4fc3f7</color>
+    <color name="app_theme_color_primary">#ff607d8b</color>
+    <color name="app_theme_color_primary_dark">#ff455a64</color>
 
-    <color name="activity_edit_text_editor_colorLineHighlight">#2040c4ff</color>
-    <color name="activity_edit_text_editor_colorLineNumberColumnBg">#e0e0e0</color>
+    <color name="activity_edit_editor_color_line_highlight">#2040c4ff</color>
+    <color name="activity_edit_editor_color_line_number_column_background">#ffe0e0e0</color>
 
 </resources>

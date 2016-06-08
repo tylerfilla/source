@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="activity_edit_binary_appbar_elevation">4dp</dimen>
-    <dimen name="activity_edit_text_appbar_elevation">4dp</dimen>
+    <dimen name="activity_edit_appbar_elevation">4dp</dimen>
 
-    <dimen name="activity_edit_text_editor_textSize">18sp</dimen>
+    <dimen name="activity_edit_editor_textSize">18sp</dimen>
 
-    <dimen name="activity_edit_text_editor_paddingBottom">0dp</dimen>
-    <dimen name="activity_edit_text_editor_paddingTop">0dp</dimen>
+    <dimen name="activity_edit_editor_padding_bottom">0dp</dimen>
+    <dimen name="activity_edit_editor_padding_top">0dp</dimen>
 
-    <dimen name="activity_edit_text_editor_lineNumberColumnPaddingLeft">8dp</dimen>
-    <dimen name="activity_edit_text_editor_lineNumberColumnPaddingRight">8dp</dimen>
+    <dimen name="activity_edit_editor_line_number_column_padding_left">8dp</dimen>
+    <dimen name="activity_edit_editor_line_number_column_padding_right">8dp</dimen>
 
 </resources>

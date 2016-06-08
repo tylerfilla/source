@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" style="@style/Activity.Edit.Popup.Root">
+
+    <LinearLayout
+        android:id="@+id/activity_edit_popup_more_options_item_rename"
+        style="@style/Activity.Edit.Popup.Item">
+
+        <TextView
+            android:text="[ filename ]"
+            tools:ignore="HardcodedText"
+            style="@style/Activity.Edit.Popup.Item.Text" />
+
+    </LinearLayout>
+
+    <LinearLayout style="@style/Activity.Edit.Popup.Item.Separator" />
+
+    <LinearLayout
+        android:id="@+id/activity_edit_popup_more_options_item_goto"
+        style="@style/Activity.Edit.Popup.Item">
+
+        <TextView
+            android:text="@string/activity_edit_popup_more_options_item_goto_text"
+            style="@style/Activity.Edit.Popup.Item.Text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activity_edit_popup_more_options_item_find_replace"
+        style="@style/Activity.Edit.Popup.Item">
+
+        <TextView
+            android:text="@string/activity_edit_popup_more_options_item_find_text"
+            style="@style/Activity.Edit.Popup.Item.Text" />
+
+    </LinearLayout>
+
+</LinearLayout>

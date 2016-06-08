@@ -4,57 +4,52 @@
     <!-- Found globally -->
     <string name="app_name">Source</string>
 
-    <!-- Found in edit binary activity more options popup -->
-    <string name="popup_activity_edit_binary_more_options_goto">Go to...</string>
-    <string name="popup_activity_edit_binary_more_options_find">Find and replace...</string>
-    <string name="popup_activity_edit_binary_more_options_word_wrap">Word wrap</string>
-    <string name="popup_activity_edit_binary_more_options_line_numbers">Line numbers</string>
-    <string name="popup_activity_edit_binary_more_options_language">Set language...</string>
-    <string name="popup_activity_edit_binary_more_options_syntax_highlighting">Syntax highlighting</string>
+    <!-- Found in edit activity rename dialog -->
+    <string name="activity_edit_dialog_rename_title">Rename File</string>
+    <string name="activity_edit_dialog_rename_button_cancel_text">Cancel</string>
+    <string name="activity_edit_dialog_rename_button_rename_text">Rename</string>
 
-    <!-- Found in edit text activity rename dialog -->
-    <string name="dialog_activity_edit_text_rename_title">Rename File</string>
-    <string name="dialog_activity_edit_text_rename_button_cancel_text">Cancel</string>
-    <string name="dialog_activity_edit_text_rename_button_rename_text">Rename</string>
+    <!-- Found in edit activity goto dialog -->
+    <string name="activity_edit_dialog_goto_title">Go To</string>
+    <string name="activity_edit_dialog_goto_input_goto_hint_type_line">Go to line...</string>
+    <string name="activity_edit_dialog_goto_input_goto_hint_type_offset">Go to character...</string>
+    <string name="activity_edit_dialog_goto_input_enable_line_input_text">Go to line</string>
+    <string name="activity_edit_dialog_goto_input_enable_offset_input_text">Go to character</string>
+    <string name="activity_edit_dialog_goto_button_negative_text">Cancel</string>
+    <string name="activity_edit_dialog_goto_button_positive_text">Go to</string>
 
-    <!-- Found in edit text activity goto dialog -->
-    <string name="dialog_activity_edit_text_goto_title">Go To</string>
-    <string name="dialog_activity_edit_text_goto_input_goto_hint_type_line">Go to line...</string>
-    <string name="dialog_activity_edit_text_goto_input_goto_hint_type_offset">Go to character...</string>
-    <string name="dialog_activity_edit_text_goto_input_enable_line_input_text">Go to line</string>
-    <string name="dialog_activity_edit_text_goto_input_enable_offset_input_text">Go to character</string>
-    <string name="dialog_activity_edit_text_goto_button_negative_text">Cancel</string>
-    <string name="dialog_activity_edit_text_goto_button_positive_text">Go to</string>
+    <!-- Found in edit activity find and replace dialog -->
+    <string name="activity_edit_dialog_find_replace_title">Find and Replace</string>
+    <string name="activity_edit_dialog_find_replace_input_search_hint">Search for...</string>
+    <string name="activity_edit_dialog_find_replace_input_enable_match_case_hint">Match case</string>
+    <string name="activity_edit_dialog_find_replace_input_enable_replace_hint">Replace text</string>
+    <string name="activity_edit_dialog_find_replace_input_replace_hint">Replace with...</string>
+    <string name="activity_edit_dialog_find_replace_button_negative_text">Cancel</string>
+    <string name="activity_edit_dialog_find_replace_button_positive_text_find">Find</string>
+    <string name="activity_edit_dialog_find_replace_button_positive_text_replace">Replace</string>
 
-    <!-- Found in edit text activity find and replace dialog -->
-    <string name="dialog_activity_edit_text_find_title">Find and Replace</string>
-    <string name="dialog_activity_edit_text_find_input_search_hint">Search for...</string>
-    <string name="dialog_activity_edit_text_find_input_enable_match_case_hint">Match case</string>
-    <string name="dialog_activity_edit_text_find_input_enable_match_words_hint">Match words</string>
-    <string name="dialog_activity_edit_text_find_input_enable_replace_hint">Replace text</string>
-    <string name="dialog_activity_edit_text_find_input_replace_hint">Replace with...</string>
-    <string name="dialog_activity_edit_text_find_button_cancel_text">Cancel</string>
-    <string name="dialog_activity_edit_text_find_button_find_text">Find</string>
-    <string name="dialog_activity_edit_text_find_button_replace_text">Replace</string>
+    <!-- Found in edit activity options menu -->
+    <string name="activity_edit_menu_options_item_undo_title">Undo</string>
+    <string name="activity_edit_menu_options_item_redo_title">Redo</string>
+    <string name="activity_edit_menu_options_item_insert_title">Insert</string>
+    <string name="activity_edit_menu_options_item_more_options_title">More options</string>
 
-    <!-- Found in edit text activity options menu -->
-    <string name="menu_activity_edit_text_item_undo_title">Undo</string>
-    <string name="menu_activity_edit_text_item_redo_title">Redo</string>
-    <string name="menu_activity_edit_text_item_insert_title">Insert</string>
-    <string name="menu_activity_edit_text_item_more_options_title">More options</string>
+    <!-- Found in edit activity more options popup -->
+    <string name="activity_edit_popup_more_options_item_goto_text">Go to...</string>
+    <string name="activity_edit_popup_more_options_item_find_text">Find and replace...</string>
+    <string name="activity_edit_popup_more_options_item_word_wrap_text">Word wrap</string>
+    <string name="activity_edit_popup_more_options_item_line_numbers_text">Line numbers</string>
+    <string name="activity_edit_popup_more_options_item_language_text">Set highlighting language...</string>
+    <string name="activity_edit_popup_more_options_item_syntax_highlighting_text">Syntax highlighting</string>
 
-    <!-- Found in edit text activity more options popup -->
-    <string name="popup_activity_edit_text_more_options_goto">Go to...</string>
-    <string name="popup_activity_edit_text_more_options_find">Find and replace...</string>
-    <string name="popup_activity_edit_text_more_options_word_wrap">Word wrap</string>
-    <string name="popup_activity_edit_text_more_options_line_numbers">Line numbers</string>
-    <string name="popup_activity_edit_text_more_options_language">Set highlighting language...</string>
-    <string name="popup_activity_edit_text_more_options_syntax_highlighting">Syntax highlighting</string>
+    <!-- Found in edit activity find and replace popup -->
+    <string name="activity_edit_popup_find_replace_item_replace_text">Replace</string>
+    <string name="activity_edit_popup_find_replace_item_next_text">Next</string>
+    <string name="activity_edit_popup_find_replace_item_previous_text">Previous</string>
 
-    <!-- Found in edit text activity editor search operation result snackbar -->
-    <string name="operation_activity_edit_text_editor_search_result_snackbar_success_text">Found %1$d occurrences of \"%2$s\"</string>
-    <string name="operation_activity_edit_text_editor_search_result_snackbar_fail_text">Unable to find \"%1$s\"</string>
-    <string name="operation_activity_edit_text_editor_search_result_snackbar_end_text">No occurrences remain</string>
+    <!-- Found in edit activity find and replace result snackbar -->
+    <string name="activity_edit_snackbar_find_replace_result_text_fail">Unable to find \"%1$s\"</string>
+    <string name="activity_edit_snackbar_find_replace_result_text_end">No occurrences remain</string>
 
     <!-- Miscellaneous -->
     <string name="_default_file_name">Untitled</string>

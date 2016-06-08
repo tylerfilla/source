@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Activity.Edit.Root"
+    tools:context=".EditActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/activity_edit_app_bar"
+        style="@style/Activity.Edit.AppBar" />
+
+    <com.gmail.tylerfilla.widget.panview.PanView
+        android:id="@+id/activity_edit_panview"
+        style="@style/Activity.Edit.PanView">
+
+        <io.microdev.source.widget.editor.Editor
+            android:id="@+id/activity_edit_editor"
+            style="@style/Activity.Edit.Editor" />
+
+    </com.gmail.tylerfilla.widget.panview.PanView>
+
+</RelativeLayout>

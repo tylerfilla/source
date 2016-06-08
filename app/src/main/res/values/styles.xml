@@ -1,40 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Activity.EditBinary.Root" parent="">
+    <style name="Activity.Edit.Root" parent="">
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">match_parent</item>
     </style>
 
-    <style name="Activity.EditBinary.AppBar" parent="">
-        <item name="android:background">?attr/colorPrimary</item>
-        <item name="android:elevation" tools:targetApi="21">@dimen/activity_edit_binary_appbar_elevation</item>
-        <item name="android:layout_alignParentTop">true</item>
-        <item name="android:layout_height">?attr/actionBarSize</item>
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
-    </style>
-
-    <style name="Activity.EditBinary.Editor" parent="">
-        <!-- Android attrs -->
-        <item name="android:imeOptions">flagNoExtractUi</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:paddingBottom">@dimen/activity_edit_text_editor_paddingBottom</item>
-        <item name="android:paddingTop">@dimen/activity_edit_text_editor_paddingTop</item>
-        <item name="android:textSize">@dimen/activity_edit_text_editor_textSize</item>
-        <item name="android:typeface">monospace</item>
-
-        <!-- Custom attrs -->
-        <!-- nope! -->
-    </style>
-
-    <style name="Activity.EditText.Root" parent="">
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:layout_width">match_parent</item>
-    </style>
-
-    <style name="Activity.EditText.Popup.Root" parent="">
+    <style name="Activity.Edit.Popup.Root" parent="">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">wrap_content</item>
         <item name="android:orientation">vertical</item>
@@ -42,7 +14,7 @@
         <item name="android:paddingTop">8dp</item>
     </style>
 
-    <style name="Activity.EditText.Popup.Item" parent="">
+    <style name="Activity.Edit.Popup.Item" parent="">
         <item name="android:background">?android:attr/selectableItemBackground</item>
         <item name="android:gravity">start|center_vertical</item>
         <item name="android:layout_height">48dp</item>
@@ -52,7 +24,7 @@
         <item name="android:onClick">onMoreOptsPopupItemSelected</item>
     </style>
 
-    <style name="Activity.EditText.Popup.Item.Text" parent="">
+    <style name="Activity.Edit.Popup.Item.Text" parent="">
         <item name="android:gravity">start|center_vertical</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">wrap_content</item>
@@ -64,53 +36,54 @@
         <item name="android:tag">text</item>
     </style>
 
-    <style name="Activity.EditText.Popup.Item.Separator" parent="">
+    <style name="Activity.Edit.Popup.Item.Separator" parent="">
         <item name="android:background">#18000000</item>
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_width">match_parent</item>
     </style>
 
-    <style name="Activity.EditText.AppBar" parent="">
+    <style name="Activity.Edit.AppBar" parent="">
         <item name="android:background">?attr/colorPrimary</item>
-        <item name="android:elevation" tools:targetApi="21">@dimen/activity_edit_text_appbar_elevation</item>
+        <item name="android:elevation" tools:targetApi="21">@dimen/activity_edit_appbar_elevation</item>
         <item name="android:layout_alignParentTop">true</item>
         <item name="android:layout_height">?attr/actionBarSize</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
     </style>
 
-    <style name="Activity.EditText.PanView" parent="">
+    <style name="Activity.Edit.PanView" parent="">
         <item name="android:background">@null</item>
-        <item name="android:layout_below">@id/activityEditTextAppBar</item>
+        <item name="android:layout_below">@id/activity_edit_app_bar</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_width">match_parent</item>
         <item name="fillViewportHeight">true</item>
         <item name="fillViewportWidth">true</item>
     </style>
 
-    <style name="Activity.EditText.Editor" parent="">
+    <style name="Activity.Edit.Editor" parent="">
         <!-- Android attrs -->
         <item name="android:imeOptions">flagNoExtractUi</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">wrap_content</item>
-        <item name="android:paddingBottom">@dimen/activity_edit_text_editor_paddingBottom</item>
-        <item name="android:paddingTop">@dimen/activity_edit_text_editor_paddingTop</item>
-        <item name="android:textSize">@dimen/activity_edit_text_editor_textSize</item>
+        <item name="android:paddingBottom">@dimen/activity_edit_editor_padding_bottom</item>
+        <item name="android:paddingTop">@dimen/activity_edit_editor_padding_top</item>
+        <item name="android:textSize">@dimen/activity_edit_editor_textSize</item>
         <item name="android:typeface">monospace</item>
 
         <!-- Custom attrs -->
-        <item name="colorLineHighlight">@color/activity_edit_text_editor_colorLineHighlight</item>
-        <item name="colorLineNumberColumnBg">@color/activity_edit_text_editor_colorLineNumberColumnBg</item>
-        <item name="lineNumberColumnPaddingLeft">@dimen/activity_edit_text_editor_lineNumberColumnPaddingLeft</item>
-        <item name="lineNumberColumnPaddingRight">@dimen/activity_edit_text_editor_lineNumberColumnPaddingRight</item>
+        <item name="colorLineHighlight">@color/activity_edit_editor_color_line_highlight</item>
+        <item name="colorLineNumberColumnBackground">@color/activity_edit_editor_color_line_number_column_background</item>
+        <item name="lineNumberColumnPaddingLeft">@dimen/activity_edit_editor_line_number_column_padding_left</item>
+        <item name="lineNumberColumnPaddingRight">@dimen/activity_edit_editor_line_number_column_padding_right</item>
         <item name="showLineHighlight">true</item>
         <item name="showLineNumbers">true</item>
     </style>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/app_theme_color_accent</item>
+        <item name="colorPrimary">@color/app_theme_color_primary</item>
+        <item name="colorPrimaryDark">@color/app_theme_color_primary_dark</item>
     </style>
 
 </resources>

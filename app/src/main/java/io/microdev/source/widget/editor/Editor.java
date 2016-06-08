@@ -1,4 +1,4 @@
-package io.microdev.source.widget.editortext;
+package io.microdev.source.widget.editor;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -31,7 +31,7 @@ import io.microdev.source.R;
 
 import static io.microdev.source.util.DimenUtil.dpToPx;
 
-public class EditorText extends EditText {
+public class Editor extends EditText {
 
     private static final int DEF_COLOR_LINE_HIGHLIGHT = 0x2040c4ff;
     private static final int DEF_COLOR_LINE_NUMBER_COLUMN_BG = 0xffe0e0e0;
@@ -67,19 +67,16 @@ public class EditorText extends EditText {
 
     private UndoProvider undoProvider;
 
-    private SyntaxHighlighter syntaxHighlighter;
-    private SyntaxHighlightingUpdateThread syntaxHighlightingUpdateThread;
-
     private int textChangedInternally;
 
-    public EditorText(Context context) {
+    public Editor(Context context) {
         super(context);
 
         initialize();
         configure();
     }
 
-    public EditorText(Context context, AttributeSet attrs) {
+    public Editor(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         initialize();
@@ -87,7 +84,7 @@ public class EditorText extends EditText {
         configure();
     }
 
-    public EditorText(Context context, AttributeSet attrs, int defStyleAttr) {
+    public Editor(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs);
 
         initialize();
@@ -96,7 +93,7 @@ public class EditorText extends EditText {
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public EditorText(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public Editor(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs);
 
         initialize();
@@ -119,18 +116,18 @@ public class EditorText extends EditText {
 
     private void handleAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         // Get styled attributes array
-        TypedArray styledAttrs = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.EditorText, defStyleAttr, defStyleRes);
+        TypedArray styledAttrs = getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.Editor, defStyleAttr, defStyleRes);
 
-        colorLineHighlight = styledAttrs.getColor(R.styleable.EditorText_colorLineHighlight, colorLineHighlight);
-        colorLineNumberColumnBg = styledAttrs.getColor(R.styleable.EditorText_colorLineNumberColumnBg, colorLineNumberColumnBg);
+        colorLineHighlight = styledAttrs.getColor(R.styleable.Editor_colorLineHighlight, colorLineHighlight);
+        colorLineNumberColumnBg = styledAttrs.getColor(R.styleable.Editor_colorLineNumberColumnBackground, colorLineNumberColumnBg);
 
-        showLineHighlight = styledAttrs.getBoolean(R.styleable.EditorText_showLineHighlight, showLineHighlight);
-        showLineNumbers = styledAttrs.getBoolean(R.styleable.EditorText_showLineNumbers, showLineNumbers);
+        showLineHighlight = styledAttrs.getBoolean(R.styleable.Editor_showLineHighlight, showLineHighlight);
+        showLineNumbers = styledAttrs.getBoolean(R.styleable.Editor_showLineNumbers, showLineNumbers);
 
-        lineNumberColumnPaddingLeft = styledAttrs.getDimension(R.styleable.EditorText_lineNumberColumnPaddingLeft, lineNumberColumnPaddingLeft);
-        lineNumberColumnPaddingRight = styledAttrs.getDimension(R.styleable.EditorText_lineNumberColumnPaddingLeft, lineNumberColumnPaddingRight);
+        lineNumberColumnPaddingLeft = styledAttrs.getDimension(R.styleable.Editor_lineNumberColumnPaddingLeft, lineNumberColumnPaddingLeft);
+        lineNumberColumnPaddingRight = styledAttrs.getDimension(R.styleable.Editor_lineNumberColumnPaddingLeft, lineNumberColumnPaddingRight);
 
-        enableSyntaxHighlighting = styledAttrs.getBoolean(R.styleable.EditorText_enableSyntaxHighlighting, enableSyntaxHighlighting);
+        enableSyntaxHighlighting = styledAttrs.getBoolean(R.styleable.Editor_enableSyntaxHighlighting, enableSyntaxHighlighting);
 
         // Recycle styled attributes array
         styledAttrs.recycle();
@@ -199,8 +196,6 @@ public class EditorText extends EditText {
 
             @Override
             public void afterTextChanged(Editable s) {
-                // Bump the syntax highlighting update thread
-                syntaxHighlightingUpdateThread.bump();
             }
 
         });
@@ -210,10 +205,6 @@ public class EditorText extends EditText {
 
         // Establish undo baseline
         undoProvider.reset();
-
-        // Create a and start syntax highlighting update thread
-        syntaxHighlightingUpdateThread = new SyntaxHighlightingUpdateThread();
-        syntaxHighlightingUpdateThread.start();
 
         // Give line numbering a little nudge
         lineCountCurrent = 0;
@@ -296,14 +287,6 @@ public class EditorText extends EditText {
 
     public void redo(int count) {
         undoProvider.redo(count);
-    }
-
-    public SyntaxHighlighter getSyntaxHighlighter() {
-        return syntaxHighlighter;
-    }
-
-    public void setSyntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
-        this.syntaxHighlighter = syntaxHighlighter;
     }
 
     private void updateLineNumberColumnWidth(boolean force) {
@@ -760,66 +743,6 @@ public class EditorText extends EditText {
 
             };
 
-        }
-
-    }
-
-    public interface SyntaxHighlighter {
-
-        void highlight(Editable source);
-
-    }
-
-    private class SyntaxHighlightingUpdateThread extends Thread {
-
-        private static final long CHECK_PERIOD = 100l;
-        private static final long HIGHLIGHT_THRESHOLD = 500l;
-
-        private boolean highlighted;
-        private long timeLastBumped;
-
-        private volatile boolean shouldStop;
-
-        private SyntaxHighlightingUpdateThread() {
-            highlighted = true;
-            timeLastBumped = System.nanoTime();
-
-            shouldStop = false;
-        }
-
-        @Override
-        public void run() {
-            while (!shouldStop) {
-                // If syntax highlighting is enabled
-                if (enableSyntaxHighlighting && syntaxHighlighter != null) {
-                    // If this bump series hasn't been highlighted and it's been long enough
-                    if (!highlighted && System.nanoTime() - timeLastBumped > HIGHLIGHT_THRESHOLD * 1000000) {
-                        // Run syntax highlighting
-                        syntaxHighlighter.highlight(getText());
-
-                        // Set highlighted flag
-                        highlighted = true;
-                    }
-                }
-
-                try {
-                    Thread.sleep(CHECK_PERIOD);
-                } catch (InterruptedException e) {
-                    shouldStop = true;
-                }
-            }
-        }
-
-        public void setShouldStop(boolean shouldStop) {
-            this.shouldStop = shouldStop;
-        }
-
-        public void bump() {
-            // Reset for next highlight
-            highlighted = false;
-
-            // Mark time of bump
-            timeLastBumped = System.nanoTime();
         }
 
     }

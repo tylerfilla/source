@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Activity.Edit.Popup.Root">
+
+    <LinearLayout
+        android:id="@+id/activity_edit_popup_find_replace_item_replace"
+        style="@style/Activity.Edit.Popup.Item">
+
+        <TextView
+            android:text="@string/activity_edit_popup_find_replace_item_replace_text"
+            style="@style/Activity.Edit.Popup.Item.Text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activity_edit_popup_find_replace_item_next"
+        style="@style/Activity.Edit.Popup.Item">
+
+        <TextView
+            android:text="@string/activity_edit_popup_find_replace_item_next_text"
+            style="@style/Activity.Edit.Popup.Item.Text" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/activity_edit_popup_find_replace_item_previous"
+        style="@style/Activity.Edit.Popup.Item">
+
+        <TextView
+            android:text="@string/activity_edit_popup_find_replace_item_previous_text"
+            style="@style/Activity.Edit.Popup.Item.Text" />
+
+    </LinearLayout>
+
+</LinearLayout>
