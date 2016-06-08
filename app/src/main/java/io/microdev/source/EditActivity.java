@@ -184,10 +184,6 @@ public class EditActivity extends AppCompatActivity {
 
         // Store filename
         outState.putString("filename", filename);
-
-        // Store pan coordinates
-        outState.putInt("panX", panView.getPanX());
-        outState.putInt("panY", panView.getPanY());
     }
 
     @Override
@@ -196,10 +192,6 @@ public class EditActivity extends AppCompatActivity {
 
         // Retrieve filename
         setFilename(savedInstanceState.getString("filename", filename));
-
-        // Retrieve pan coordinates
-        panView.setPanX(savedInstanceState.getInt("panX", 0));
-        panView.setPanY(savedInstanceState.getInt("panY", 0));
     }
 
     @Override
