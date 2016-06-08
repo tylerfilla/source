@@ -406,7 +406,6 @@ public class Editor extends EditText {
     public void onRestoreInstanceState(Parcelable state) {
         // Check if state is ours
         if (state instanceof SavedState) {
-            // Make it our own
             SavedState savedState = (SavedState) state;
 
             // Flag text as internally changed
@@ -464,15 +463,15 @@ public class Editor extends EditText {
             super.writeToParcel(out, flags);
 
             // Write undo/redo stack arrays
-            out.writeParcelableArray(undoProviderStackUndoArray, 0);
-            out.writeParcelableArray(undoProviderStackRedoArray, 0);
+            out.writeParcelableArray(undoProviderStackUndoArray, flags);
+            out.writeParcelableArray(undoProviderStackRedoArray, flags);
         }
 
-        public final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+        public final Creator<SavedState> CREATOR = new Creator<SavedState>() {
 
             @Override
-            public SavedState createFromParcel(Parcel parcel) {
-                return new SavedState(parcel);
+            public SavedState createFromParcel(Parcel source) {
+                return new SavedState(source);
             }
 
             @Override
